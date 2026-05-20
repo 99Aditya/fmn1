@@ -1,0 +1,945 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Elegant CareerHub | FullPage Slider + ATS Insight</title>
+    <!-- Bootstrap 5 + Icons + Theme -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <!-- Swiper Slider (modern, lightweight, fullscreen ready) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+    />
+    <!-- Animate.css -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          Roboto,
+          Helvetica,
+          sans-serif;
+        transition:
+          background 0.3s ease,
+          color 0.2s ease;
+        scroll-behavior: smooth;
+      }
+
+      /* FULL PAGE SLIDER SECTION - Hero Slider */
+      .fullpage-slider {
+        width: 100%;
+        height: 100vh;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .fullpage-swiper {
+        width: 100%;
+        height: 100%;
+      }
+
+      .fullpage-swiper .swiper-slide {
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+
+      .slide-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          135deg,
+          rgba(0, 0, 0, 0.5) 0%,
+          rgba(0, 0, 0, 0.3) 100%
+        );
+        z-index: 1;
+      }
+
+      [data-bs-theme="dark"] .slide-overlay {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 0, 0, 0.7) 0%,
+          rgba(0, 0, 0, 0.5) 100%
+        );
+      }
+
+      .slide-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        color: white;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .slide-content h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        animation: fadeInUp 0.8s ease;
+      }
+
+      .slide-content p {
+        font-size: 1.25rem;
+        opacity: 0.95;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.8s ease 0.1s both;
+      }
+
+      .slide-content .btn {
+        animation: fadeInUp 0.8s ease 0.2s both;
+        border-radius: 50px;
+        padding: 12px 32px;
+        font-weight: 600;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Custom Navigation & Pagination for fullpage slider */
+      .fullpage-swiper .swiper-button-next,
+      .fullpage-swiper .swiper-button-prev {
+        color: white;
+        background: rgba(255, 255, 255, 0.2);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        backdrop-filter: blur(4px);
+        transition: all 0.3s;
+      }
+      .fullpage-swiper .swiper-button-next:hover,
+      .fullpage-swiper .swiper-button-prev:hover {
+        background: rgba(255, 255, 255, 0.4);
+        transform: scale(1.05);
+      }
+      .fullpage-swiper .swiper-pagination-bullet {
+        background: white;
+        opacity: 0.6;
+      }
+      .fullpage-swiper .swiper-pagination-bullet-active {
+        background: white;
+        opacity: 1;
+        width: 30px;
+        border-radius: 10px;
+      }
+
+      /* Navbar styling (transparent over slider, solid on scroll) */
+      .navbar {
+        transition: all 0.4s ease;
+        background-color: transparent !important;
+        backdrop-filter: blur(0px);
+      }
+      .navbar-scrolled {
+        background-color: var(--bs-body-bg) !important;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+      [data-bs-theme="dark"] .navbar-scrolled {
+        background-color: rgba(33, 37, 41, 0.95) !important;
+      }
+
+      /* Rating cards */
+      .rating-card {
+        border-radius: 1.5rem;
+        transition:
+          transform 0.25s ease,
+          box-shadow 0.25s;
+        backdrop-filter: blur(2px);
+        background: rgba(255, 255, 255, 0.7);
+      }
+      [data-bs-theme="dark"] .rating-card {
+        background: rgba(30, 40, 55, 0.8);
+        backdrop-filter: blur(4px);
+      }
+      .rating-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.1);
+      }
+      /* counter section */
+      .counter-box {
+        border-radius: 2rem;
+        padding: 1.5rem;
+        background: white;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02);
+        transition: all 0.2s;
+      }
+      [data-bs-theme="dark"] .counter-box {
+        background: #1e2a3a;
+      }
+      .counter-number {
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1.2;
+        color: #0d6efd;
+      }
+      /* Resume upload zone */
+      .upload-zone {
+        border: 2px dashed #ced4da;
+        border-radius: 2rem;
+        padding: 2.5rem 1rem;
+        transition: all 0.25s;
+        cursor: pointer;
+        background: rgba(13, 110, 253, 0.02);
+      }
+      .upload-zone:hover {
+        border-color: #0d6efd;
+        background: rgba(13, 110, 253, 0.05);
+      }
+      [data-bs-theme="dark"] .upload-zone {
+        border-color: #3a4a5c;
+      }
+      [data-bs-theme="dark"] .upload-zone:hover {
+        border-color: #6ea8fe;
+      }
+      .insight-card {
+        border-radius: 1.5rem;
+        transition: all 0.2s;
+        border-left: 5px solid #0d6efd;
+      }
+      footer a {
+        text-decoration: none;
+        transition: opacity 0.2s;
+      }
+      footer a:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+      }
+      @media (max-width: 768px) {
+        .counter-number {
+          font-size: 2.2rem;
+        }
+        .slide-content h1 {
+          font-size: 2.2rem;
+        }
+        .slide-content p {
+          font-size: 1rem;
+        }
+        .fullpage-swiper .swiper-button-next,
+        .fullpage-swiper .swiper-button-prev {
+          width: 35px;
+          height: 35px;
+        }
+      }
+      .btn-outline-theme {
+        border-radius: 40px;
+        padding: 0.5rem 1.2rem;
+      }
+      .theme-toggle {
+        cursor: pointer;
+      }
+      section {
+        scroll-margin-top: 70px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation (starts transparent) -->
+    <nav id="mainNavbar" class="navbar navbar-expand-lg fixed-top">
+      <div class="container">
+        <a class="navbar-brand fw-bold text-white" href="#"
+          ><i class="bi bi-briefcase-fill me-2"></i>Career<span
+            style="color: #ffd966"
+            >Elevate</span
+          ></a
+        >
+        <button
+          class="navbar-toggler border-0 bg-white bg-opacity-25"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarMain"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarMain">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center gap-2">
+            <li class="nav-item">
+              <a class="nav-link text-white fw-semibold" href="#home">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="#success-stories">Stories</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="#counters">Impact</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link text-white" href="#resume-ats">ATS Insight</a>
+            </li>
+            <li class="nav-item">
+              <button
+                id="darkModeToggle"
+                class="btn btn-outline-light btn-outline-theme theme-toggle"
+              >
+                <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+                <span id="themeText">Dark</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main>
+      <!-- 1. FULL PAGE SLIDER SECTION ON TOP (Hero) -->
+      <div id="home" class="fullpage-slider">
+        <div class="swiper fullpage-swiper">
+          <div class="swiper-wrapper">
+            <!-- Slide 1 - AI Theme -->
+            <div
+              class="swiper-slide"
+              style="
+                background-image: url(&quot;https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&h=900&fit=crop&quot;);
+              "
+            >
+              <div class="slide-overlay"></div>
+              <div
+                class="slide-content d-flex flex-column justify-content-center align-items-center h-100"
+              >
+                <h1>AI-Powered Career Evolution</h1>
+                <p>
+                  Unlock hidden opportunities with smart resume analytics that
+                  beat any ATS system.
+                </p>
+                <a href="#resume-ats" class="btn btn-primary btn-lg"
+                  >Get Started →</a
+                >
+              </div>
+            </div>
+            <!-- Slide 2 - Success / Dream Job -->
+            <div
+              class="swiper-slide"
+              style="
+                background-image: url(&quot;https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=1600&h=900&fit=crop&quot;);
+              "
+            >
+              <div class="slide-overlay"></div>
+              <div
+                class="slide-content d-flex flex-column justify-content-center align-items-center h-100"
+              >
+                <h1>Land Your Dream Job</h1>
+                <p>
+                  Join 12k+ professionals who transformed their resumes and
+                  doubled interview calls.
+                </p>
+                <a href="#success-stories" class="btn btn-outline-light btn-lg"
+                  >Success Stories</a
+                >
+              </div>
+            </div>
+            <!-- Slide 3 - Data Insights -->
+            <div
+              class="swiper-slide"
+              style="
+                background-image: url(&quot;https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1600&h=900&fit=crop&quot;);
+              "
+            >
+              <div class="slide-overlay"></div>
+              <div
+                class="slide-content d-flex flex-column justify-content-center align-items-center h-100"
+              >
+                <h1>Instant Resume Intelligence</h1>
+                <p>
+                  Receive actionable feedback, keyword suggestions & ATS score
+                  within seconds.
+                </p>
+                <a href="#resume-ats" class="btn btn-primary btn-lg"
+                  >Analyze Resume</a
+                >
+              </div>
+            </div>
+          </div>
+          <div class="swiper-pagination"></div>
+          <div class="swiper-button-next"></div>
+          <div class="swiper-button-prev"></div>
+        </div>
+      </div>
+
+      <section class="container my-4 my-md-5 pt-2">
+        <div class="swiper mySwiper">
+          <div class="swiper-wrapper">
+            <!-- Slide 1 -->
+            <div class="swiper-slide text-center">
+              <div class="slider-icon"><i class="bi bi-robot"></i></div>
+              <h3 class="fw-bold">AI-Powered Career Insights</h3>
+              <p class="lead">
+                Your resume, analyzed by next-gen ATS algorithms.
+              </p>
+              <span
+                class="badge bg-primary bg-opacity-25 text-primary px-3 py-2 rounded-pill"
+                >✨ 96% match accuracy</span
+              >
+            </div>
+            <!-- Slide 2 -->
+            <div class="swiper-slide text-center">
+              <div class="slider-icon"><i class="bi bi-graph-up"></i></div>
+              <h3 class="fw-bold">Get noticed by top employers</h3>
+              <p class="lead">Smart keyword optimization & format scoring.</p>
+              <span
+                class="badge bg-primary bg-opacity-25 text-primary px-3 py-2 rounded-pill"
+                >📈 3x more interviews</span
+              >
+            </div>
+            <!-- Slide 3 -->
+            <div class="swiper-slide text-center">
+              <div class="slider-icon">
+                <i class="bi bi-file-text-fill"></i>
+              </div>
+              <h3 class="fw-bold">Instant Resume Feedback</h3>
+              <p class="lead">
+                Upload your resume and unlock personalized suggestions.
+              </p>
+              <span
+                class="badge bg-primary bg-opacity-25 text-primary px-3 py-2 rounded-pill"
+                >⚡ Real-time analysis</span
+              >
+            </div>
+          </div>
+          <div class="swiper-pagination"></div>
+          <div class="swiper-button-next"></div>
+          <div class="swiper-button-prev"></div>
+        </div>
+      </section>
+
+      <!-- 2. Rating Section with Success Stories -->
+      <section id="success-stories" class="container my-5 py-5">
+        <div class="text-center mb-5">
+          <span
+            class="badge bg-primary bg-opacity-10 text-primary px-4 py-2 rounded-pill mb-2"
+            >❤️ Real transformations</span
+          >
+          <h2 class="display-6 fw-semibold">Success Stories that inspire</h2>
+          <p class="text-secondary-emphasis">
+            Join thousands who landed their dream job
+          </p>
+        </div>
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="rating-card card h-100 border-0 shadow-sm p-4">
+              <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-star-fill text-warning fs-4 me-1"></i>
+                <i class="bi bi-star-fill text-warning fs-4 me-1"></i>
+                <i class="bi bi-star-fill text-warning fs-4 me-1"></i>
+                <i class="bi bi-star-fill text-warning fs-4 me-1"></i>
+                <i class="bi bi-star-fill text-warning fs-4"></i>
+              </div>
+              <p class="fst-italic fs-5">
+                “After uploading my resume, I got instant ATS fixes. Within 2
+                weeks I received 4 interview calls!”
+              </p>
+              <div class="mt-auto d-flex align-items-center">
+                <img
+                  src="https://randomuser.me/api/portraits/women/68.jpg"
+                  alt="avatar"
+                  class="rounded-circle me-3"
+                  width="48"
+                  height="48"
+                  style="object-fit: cover"
+                />
+                <div>
+                  <strong>Sophia Chen</strong><br /><small class="text-muted"
+                    >Product Manager @ TechUni</small
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="rating-card card h-100 border-0 shadow-sm p-4">
+              <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-star-fill text-warning fs-4 me-1"></i>
+                <i class="bi bi-star-fill text-warning fs-4 me-1"></i>
+                <i class="bi bi-star-fill text-warning fs-4 me-1"></i>
+                <i class="bi bi-star-fill text-warning fs-4 me-1"></i>
+                <i class="bi bi-star-half text-warning fs-4"></i>
+              </div>
+              <p class="fst-italic fs-5">
+                “The insights dashboard showed missing keywords, I rewrote my
+                resume and got hired at Google!”
+              </p>
+              <div class="mt-auto d-flex align-items-center">
+                <img
+                  src="https://randomuser.me/api/portraits/men/32.jpg"
+                  alt="avatar"
+                  class="rounded-circle me-3"
+                  width="48"
+                  height="48"
+                />
+                <div>
+                  <strong>Michael O.</strong><br /><small class="text-muted"
+                    >Software Engineer</small
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="rating-card card h-100 border-0 shadow-sm p-4">
+              <div class="d-flex align-items-center mb-3">
+                <i class="bi bi-star-fill text-warning fs-4 me-1"></i>
+                <i class="bi bi-star-fill text-warning fs-4 me-1"></i>
+                <i class="bi bi-star-fill text-warning fs-4 me-1"></i>
+                <i class="bi bi-star-fill text-warning fs-4 me-1"></i>
+                <i class="bi bi-star-fill text-warning fs-4"></i>
+              </div>
+              <p class="fst-italic fs-5">
+                “From ghosted to 3 offers in a month! Their resume scoring
+                engine is pure magic.”
+              </p>
+              <div class="mt-auto d-flex align-items-center">
+                <img
+                  src="https://randomuser.me/api/portraits/women/45.jpg"
+                  alt="avatar"
+                  class="rounded-circle me-3"
+                  width="48"
+                  height="48"
+                />
+                <div>
+                  <strong>Priya Kapoor</strong><br /><small class="text-muted"
+                    >Marketing Lead</small
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Section with Number Counters (Moving counters) -->
+      <section id="counters" class="container my-5 py-4">
+        <div class="row g-4 text-center">
+          <div class="col-md-3 col-6">
+            <div class="counter-box">
+              <i
+                class="bi bi-briefcase-fill fs-1 text-primary mb-2 d-block"
+              ></i>
+              <div class="counter-number">
+                <span class="counter" data-target="12500">0</span>+
+              </div>
+              <p class="mt-2 fw-semibold">Resumes Optimized</p>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="counter-box">
+              <i class="bi bi-people-fill fs-1 text-primary mb-2 d-block"></i>
+              <div class="counter-number">
+                <span class="counter" data-target="8400">0</span>+
+              </div>
+              <p class="mt-2 fw-semibold">Happy Job Seekers</p>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="counter-box">
+              <i class="bi bi-building fs-1 text-primary mb-2 d-block"></i>
+              <div class="counter-number">
+                <span class="counter" data-target="320">0</span>+
+              </div>
+              <p class="mt-2 fw-semibold">Partner Companies</p>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="counter-box">
+              <i class="bi bi-trophy-fill fs-1 text-primary mb-2 d-block"></i>
+              <div class="counter-number">
+                <span class="counter" data-target="98">0</span>%
+              </div>
+              <p class="mt-2 fw-semibold">ATS Score Boost</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Upload Section for Resume to get ATS based resume insight -->
+      <section id="resume-ats" class="container my-5 py-4">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-6">
+            <span
+              class="badge bg-primary bg-opacity-15 text-primary px-3 py-2 rounded-pill mb-3"
+              ><i class="bi bi-file-earmark-richtext"></i> ATS Analyzer</span
+            >
+            <h2 class="display-6 fw-semibold">
+              Unlock Your Resume’s True Potential
+            </h2>
+            <p class="lead text-secondary-emphasis mt-3">
+              Get instant, detailed insights about keyword density, formatting,
+              readability, and ATS compatibility. Our AI simulates how
+              recruiters see your profile.
+            </p>
+            <ul class="list-unstyled mt-4">
+              <li class="mb-2">
+                <i class="bi bi-check-circle-fill text-primary me-2"></i>ATS
+                score & improvement tips
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-check-circle-fill text-primary me-2"></i>Missing
+                keyword suggestions
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-check-circle-fill text-primary me-2"></i
+                >Section-wise optimization guide
+              </li>
+            </ul>
+          </div>
+          <div class="col-lg-6">
+            <div class="upload-zone text-center" id="uploadZone">
+              <i class="bi bi-cloud-upload-fill fs-1 text-primary"></i>
+              <h5 class="mt-3">Drag & drop or click to upload</h5>
+              <p class="text-muted small">
+                Supports PDF, DOCX, or TXT (max 5MB)
+              </p>
+              <input
+                type="file"
+                id="resumeInput"
+                accept=".pdf,.docx,.txt,.doc"
+                style="display: none"
+              />
+              <button
+                class="btn btn-primary rounded-pill px-4 mt-2"
+                id="uploadBtn"
+              >
+                <i class="bi bi-upload"></i> Choose Resume
+              </button>
+            </div>
+            <div id="insightResult" class="mt-4 d-none">
+              <div class="insight-card p-4 bg-body-tertiary">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                  <i class="bi bi-gem fs-4 text-primary"></i>
+                  <h5 class="mb-0">ATS Insight Report</h5>
+                </div>
+                <div id="atsFeedback"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white pt-5 pb-4 mt-5" data-bs-theme="dark">
+      <div class="container">
+        <div class="row gy-4">
+          <div class="col-md-5">
+            <h3 class="fw-bold">
+              <i class="bi bi-briefcase-fill me-2"></i>CareerElevate
+            </h3>
+            <p class="text-white-50">
+              Empowering talents to break through ATS barriers and land
+              meaningful careers. Your future starts with a smart resume.
+            </p>
+            <div class="d-flex gap-3 mt-3">
+              <a href="#" class="text-white-50"
+                ><i class="bi bi-twitter-x fs-5"></i
+              ></a>
+              <a href="#" class="text-white-50"
+                ><i class="bi bi-linkedin fs-5"></i
+              ></a>
+              <a href="#" class="text-white-50"
+                ><i class="bi bi-instagram fs-5"></i
+              ></a>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <h5>Quick Links</h5>
+            <ul class="list-unstyled">
+              <li class="mb-2">
+                <a href="#" class="text-white-50">About Us</a>
+              </li>
+              <li class="mb-2">
+                <a href="#" class="text-white-50">ATS Guide</a>
+              </li>
+              <li class="mb-2">
+                <a href="#" class="text-white-50">Success Stories</a>
+              </li>
+              <li class="mb-2">
+                <a href="#" class="text-white-50">Pricing</a>
+              </li>
+            </ul>
+          </div>
+          <div class="col-md-4">
+            <h5>Subscribe</h5>
+            <p class="text-white-50">
+              Get weekly resume tips & job market insights.
+            </p>
+            <div class="input-group">
+              <input
+                type="email"
+                class="form-control bg-dark text-white border-secondary"
+                placeholder="Email address"
+              />
+              <button class="btn btn-primary" type="button">Join</button>
+            </div>
+          </div>
+        </div>
+        <hr class="mt-4 opacity-25" />
+        <div class="text-center text-white-50 small pb-2">
+          © 2026 CareerElevate — Redefining job search with intelligent ATS
+          insights.
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+      const swiper = new Swiper(".mySwiper", {
+        loop: true,
+        autoplay: {
+          delay: 4000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        },
+        pagination: {
+          el: ".swiper-pagination",
+          clickable: true,
+          dynamicBullets: true,
+        },
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
+        },
+        effect: "slide",
+        speed: 800,
+        breakpoints: { 640: { slidesPerView: 1 } },
+      });
+
+      const fullSwiper = new Swiper(".fullpage-swiper", {
+        loop: true,
+        autoplay: {
+          delay: 5000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        },
+        pagination: {
+          el: ".swiper-pagination",
+          clickable: true,
+          dynamicBullets: false,
+        },
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
+        },
+        effect: "fade",
+        fadeEffect: { crossFade: true },
+        speed: 1000,
+      });
+
+      // ========================
+      // 2. Navbar scroll effect (transparent to solid)
+      const navbar = document.getElementById("mainNavbar");
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 50) {
+          navbar.classList.add("navbar-scrolled");
+          navbar.classList.remove("bg-transparent");
+        } else {
+          navbar.classList.remove("navbar-scrolled");
+        }
+      });
+
+      // ========================
+      // 3. Counter Animation with Intersection Observer
+      const counters = document.querySelectorAll(".counter");
+      let started = false;
+      const counterSection = document.getElementById("counters");
+
+      const animateCounter = (el) => {
+        const target = parseInt(el.getAttribute("data-target"), 10);
+        let current = 0;
+        const increment = target / 70;
+        const updateCounter = () => {
+          current += increment;
+          if (current < target) {
+            el.innerText = Math.floor(current);
+            requestAnimationFrame(updateCounter);
+          } else {
+            el.innerText = target;
+          }
+        };
+        updateCounter();
+      };
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !started) {
+              started = true;
+              counters.forEach((counter) => animateCounter(counter));
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.3 },
+      );
+      if (counterSection) observer.observe(counterSection);
+
+      // ========================
+      // 4. Dark/Light Mode Toggle (Bootstrap 5.3 data-bs-theme)
+      const themeToggleBtn = document.getElementById("darkModeToggle");
+      const themeIconSpan = document.getElementById("themeIcon");
+      const themeTextSpan = document.getElementById("themeText");
+
+      function setTheme(theme) {
+        document.documentElement.setAttribute("data-bs-theme", theme);
+        localStorage.setItem("theme", theme);
+        if (theme === "dark") {
+          themeIconSpan.className = "bi bi-sun-fill";
+          themeTextSpan.innerText = "Light";
+          // adjust navbar brand text color in dark
+          const brand = document.querySelector(".navbar-brand");
+          if (brand) brand.style.color = "#fff";
+        } else {
+          themeIconSpan.className = "bi bi-moon-stars-fill";
+          themeTextSpan.innerText = "Dark";
+        }
+        // navbar scroll style update for light/dark
+        if (window.scrollY > 50) navbar.classList.add("navbar-scrolled");
+      }
+      const savedTheme = localStorage.getItem("theme") || "light";
+      setTheme(savedTheme);
+
+      themeToggleBtn.addEventListener("click", () => {
+        const current = document.documentElement.getAttribute("data-bs-theme");
+        const newTheme = current === "dark" ? "light" : "dark";
+        setTheme(newTheme);
+      });
+
+      // ========================
+      // 5. ATS Insight Simulation
+      const uploadZone = document.getElementById("uploadZone");
+      const fileInput = document.getElementById("resumeInput");
+      const uploadBtn = document.getElementById("uploadBtn");
+      const insightResultDiv = document.getElementById("insightResult");
+      const atsFeedbackDiv = document.getElementById("atsFeedback");
+
+      uploadZone.addEventListener("click", (e) => {
+        if (e.target !== uploadBtn && !uploadBtn.contains(e.target))
+          fileInput.click();
+      });
+      uploadBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        fileInput.click();
+      });
+
+      function generateATSInsight(fileName, fileSize, fileType) {
+        const randomScore = Math.floor(Math.random() * (96 - 65 + 1) + 65);
+        const keywordSuggestions = [
+          "leadership",
+          "analytics",
+          "project management",
+          "strategic planning",
+          "cross-functional",
+          "agile",
+          "data-driven",
+        ];
+        const shuffled = [...keywordSuggestions].sort(
+          () => 0.5 - Math.random(),
+        );
+        const randomKeywords = shuffled.slice(0, 3);
+        let formatNote = fileType.includes("pdf")
+          ? "PDF format is excellent for ATS parsing."
+          : fileType.includes("docx")
+            ? "DOCX is good, avoid complex tables."
+            : "TXT works but prefer PDF for best layout.";
+        let insightHtml = `
+      <div class="mb-2"><strong>📄 Filename:</strong> ${fileName}</div>
+      <div class="mb-2"><strong>🎯 Overall ATS Score:</strong> <span class="badge bg-primary fs-6">${randomScore}%</span></div>
+      <div class="mb-2"><strong>✅ Format check:</strong> ${formatNote}</div>
+      <div class="mb-2"><strong>🔑 Recommended keywords:</strong> ${randomKeywords.join(", ")}</div>
+      <div class="mb-2"><strong>💡 Tip:</strong> ${randomScore > 80 ? "Great structure! Tailor each section to job description." : "Add metrics & action verbs to boost compatibility."}</div>
+      <div class="mt-3 small text-secondary"><i class="bi bi-lightbulb"></i> Pro tip: Match job description verbs & quantify achievements.</div>
+    `;
+        if (randomScore > 90)
+          insightHtml =
+            `<div class="mb-2"><strong>🏆 Outstanding ATS compatibility!</strong> Minor refinements make it perfect.</div>` +
+            insightHtml;
+        else if (randomScore < 70)
+          insightHtml =
+            `<div class="mb-2"><strong>⚠️ Needs improvement:</strong> Focus on keywords and clear headings.</div>` +
+            insightHtml;
+        return insightHtml;
+      }
+
+      function handleFile(file) {
+        if (!file) return;
+        const validTypes = [
+          "application/pdf",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "text/plain",
+          "application/msword",
+        ];
+        if (!validTypes.includes(file.type)) {
+          atsFeedbackDiv.innerHTML = `<div class="alert alert-warning">⚠️ Please upload PDF, DOCX, or TXT files only.</div>`;
+          insightResultDiv.classList.remove("d-none");
+          return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          atsFeedbackDiv.innerHTML = `<div class="alert alert-danger">📁 File exceeds 5MB limit.</div>`;
+          insightResultDiv.classList.remove("d-none");
+          return;
+        }
+        atsFeedbackDiv.innerHTML = `<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"></div><span class="ms-2">AI analyzing resume...</span></div>`;
+        insightResultDiv.classList.remove("d-none");
+        setTimeout(() => {
+          const insight = generateATSInsight(file.name, file.size, file.type);
+          atsFeedbackDiv.innerHTML = insight;
+        }, 1300);
+      }
+
+      fileInput.addEventListener("change", (e) => {
+        if (fileInput.files.length) handleFile(fileInput.files[0]);
+      });
+
+      uploadZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadZone.classList.add("border-primary", "bg-primary-subtle");
+      });
+      uploadZone.addEventListener("dragleave", () => {
+        uploadZone.classList.remove("border-primary", "bg-primary-subtle");
+      });
+      uploadZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove("border-primary", "bg-primary-subtle");
+        const files = e.dataTransfer.files;
+        if (files.length) {
+          fileInput.files = files;
+          handleFile(files[0]);
+        }
+      });
+    </script>
+  </body>
+</html>
