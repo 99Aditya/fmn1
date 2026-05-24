@@ -275,23 +275,41 @@
         </ul>
       </div>
       <div class="col-lg-6" data-aos="fade-left">
-        <div class="upload-zone text-center" id="uploadZoneAts">
-          <i class="bi bi-cloud-upload-fill fs-1 text-primary"></i>
-          <h5 class="mt-3">Drag & Drop or Click to Upload</h5>
-          <p class="text-muted small">Supports PDF, DOCX, TXT (Max 5MB)</p>
-          <input
-            type="file"
-            id="atsResumeInput"
-            accept=".pdf,.docx,.txt,.doc"
-            style="display: none"
-          />
-          <button
-            class="btn btn-primary rounded-pill px-4 mt-2"
-            id="uploadBtnAts"
-          >
-            <i class="bi bi-upload"></i> Select Resume
-          </button>
-        </div>
+        <form method="POST" action="{{ route('ats.upload') }}" enctype="multipart/form-data">
+          @csrf
+          <div class="upload-zone text-center" id="uploadZoneAts">
+            <i class="bi bi-cloud-upload-fill fs-1 text-primary"></i>
+            <h5 class="mt-3">Drag & Drop or Click to Upload</h5>
+            <p class="text-muted small">Supports PDF, DOCX, TXT (Max 5MB)</p>
+            <input
+              type="file"
+              id="atsResumeInput"
+              name="resume"
+              accept=".pdf,.docx,.txt,.doc"
+              style="display: none"
+            />
+            <button
+              type="button"
+              class="btn btn-primary rounded-pill px-4 mt-2"
+              id="uploadBtnAts"
+            >
+              <i class="bi bi-upload"></i> Select Resume
+            </button>
+              <button type="submit" id="submitAts" class="d-none">Submit</button>
+          </div>
+            @if ($errors->any())
+              <div class="mt-3 alert alert-danger">
+                <ul class="mb-0">
+                  @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                  @endforeach
+                </ul>
+              </div>
+            @endif
+            @if (session('message'))
+              <div class="mt-3 alert alert-info">{{ session('message') }}</div>
+            @endif
+        </form>
         <div id="atsInsightResult" class="mt-4 d-none">
           <div class="insight-card p-4 bg-body-tertiary">
             <div class="d-flex align-items-center gap-2 mb-3">
@@ -368,16 +386,17 @@
   </section>
 
   <!-- Call to Action -->
-  <div class="container my-5 text-center" data-aos="fade-up">
-    <div class="bg-primary bg-opacity-10 rounded-4 p-5">
-      <h3 class="fw-bold">Ready to beat the ATS game?</h3>
-      <p class="mb-3">
-        Start with a free resume analysis — see where you stand instantly.
-      </p>
-      <a href="#upload-ats" class="btn btn-primary btn-lg rounded-pill px-5"
-        ><i class="bi bi-upload"></i> Analyze My Resume</a
-      >
-    </div>
-  </div>
+ 
 </main>
+<script>
+  (function(){
+    var btn = document.getElementById('uploadBtnAts');
+    var input = document.getElementById('atsResumeInput');
+    var submit = document.getElementById('submitAts');
+    if (btn && input) {
+      btn.addEventListener('click', function(){ input.click(); });
+      input.addEventListener('change', function(){ if (input.files && input.files.length) { submit.click(); } });
+    }
+  })();
+</script>
 @endsection
