@@ -1,7 +1,5 @@
 @extends('frontend.layouts.app')
 
-@section('title', 'CareerElevate')
-
 @section('content')
 <main>
   <!-- 1. FULL PAGE SLIDER SECTION ON TOP (Hero) -->

@@ -3,9 +3,9 @@
   <div class="container">
     <div class="row gy-4">
       <div class="col-md-5">
-        <h3 class="fw-bold">
-          <i class="bi bi-briefcase-fill me-2"></i>CareerElevate
-        </h3>
+        <a href="{{ url('/') }}" class="d-inline-flex align-items-center mb-3">
+          <img src="{{ asset('logo/logo.png') }}" alt="" height="40" class="me-2" />
+        </a>
         <p class="text-white-50">
           Empowering talents to land meaningful careers with confidence and clarity.
           Your future starts with a strong resume and career strategy.

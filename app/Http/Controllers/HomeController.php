@@ -26,4 +26,12 @@ class HomeController extends Controller
     public function mcqTest() {
         return view('frontend.mcq-test');
     }
+
+    public function about() {
+        return view('frontend.about');
+    }
+
+    public function contact() {
+        return view('frontend.contactus');
+    }
 }

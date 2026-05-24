@@ -1,12 +1,9 @@
 <!-- Navigation (starts transparent) -->
 <nav id="mainNavbar" class="navbar navbar-expand-lg fixed-top">
   <div class="container">
-    <a class="navbar-brand fw-bold text-white" href="#"
-      ><i class="bi bi-briefcase-fill me-2"></i>Career<span
-        style="color: #ffd966"
-        >Elevate</span
-      ></a
-    >
+    <a class="navbar-brand d-flex align-items-center fw-bold text-white" href="{{ url('/') }}">
+      <img src="{{ asset('logo/logo1.png') }}" alt="" height="40" class="me-2" />
+    </a>
     <button
       class="navbar-toggler border-0 bg-white bg-opacity-25"
       type="button"
@@ -22,7 +19,7 @@
           <a class="nav-link text-white fw-semibold" href="{{ url('/') }}">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white" href="#about">About</a>
+          <a class="nav-link text-white" href="{{ url('/about') }}">About</a>
         </li>
         <li class="nav-item dropdown">
           <a
@@ -48,7 +45,7 @@
           </ul>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white" href="#contact">Contact</a>
+          <a class="nav-link text-white" href="{{ url('/contact') }}">Contact</a>
         </li>
         <li class="nav-item">
           <button

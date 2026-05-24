@@ -209,6 +209,9 @@ body {
   transition: all 0.2s;
   border-left: 5px solid #0d6efd;
 }
+footer {
+  background: linear-gradient(135deg, #719cc7 0%, #4d4f52 100%) !important;
+}
 footer a {
   text-decoration: none;
   transition: opacity 0.2s;
@@ -246,14 +249,14 @@ section {
 
 /* Community page styles */
 .community-hero {
-  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #0a58ca 100%);
   border-radius: 0 0 2rem 2rem;
   padding: 5rem 0 4rem;
   color: white;
   margin-bottom: 2rem;
 }
 [data-bs-theme="dark"] .community-hero {
-  background: linear-gradient(135deg, #0b5ed7 0%, #084298 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #084298 100%);
 }
 .category-card {
   border-radius: 1.5rem;
@@ -347,7 +350,7 @@ section {
 }
 /* ATS page styles */
 .ats-hero {
-  background: linear-gradient(135deg, #0a2540 0%, #0d3b66 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #0d3b66 100%);
   border-radius: 0 0 2rem 2rem;
   padding: 4rem 0 3.5rem;
   color: white;
@@ -356,7 +359,7 @@ section {
   overflow: hidden;
 }
 [data-bs-theme="dark"] .ats-hero {
-  background: linear-gradient(135deg, #071b2b 0%, #0a2a48 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #0a2a48 100%);
 }
 .hero-badge {
   background: rgba(255, 255, 255, 0.2);
@@ -438,7 +441,7 @@ section {
 
 /* MCQ challenge page styles */
 .mcq-hero {
-  background: linear-gradient(135deg, #0f2b3d 0%, #1b4f6e 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #1b4f6e 100%);
   border-radius: 0 0 2.5rem 2.5rem;
   padding: 4rem 0 3.5rem;
   color: white;
@@ -446,7 +449,7 @@ section {
   position: relative;
 }
 [data-bs-theme="dark"] .mcq-hero {
-  background: linear-gradient(135deg, #08212e 0%, #0e3a52 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, #0e3a52 100%);
 }
 .mcq-hero-copy {
   max-width: 700px;
@@ -680,4 +683,115 @@ section {
     font-size: 1.2rem;
     padding: 0.5rem 1rem;
   }
+}
+/* About page styles */
+.badge-ai {
+  background: #e0e7ff;
+  color: #1e40af;
+  font-weight: 500;
+  border-radius: 40px;
+  padding: 0.2rem 0.9rem;
+  font-size: 0.75rem;
+}
+.btn-primary-custom {
+  background-color: #2563eb;
+  border: none;
+  padding: 0.6rem 1.8rem;
+  border-radius: 60px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn-primary-custom:hover {
+  background-color: #1d4ed8;
+  transform: scale(1.02);
+  box-shadow: 0 12px 20px -12px #2563eb;
+}
+.btn-outline-custom {
+  border: 2px solid #2563eb;
+  color: #2563eb;
+  border-radius: 60px;
+  padding: 0.55rem 1.5rem;
+  font-weight: 600;
+  background: transparent;
+  transition: 0.2s;
+}
+.btn-outline-custom:hover {
+  background-color: #2563eb;
+  color: white;
+}
+.hero-about {
+  background: linear-gradient(120deg, #f8fafc 0%, #7d95ad 100%);
+  border-bottom-left-radius: 2rem;
+  border-bottom-right-radius: 2rem;
+}
+.stat-bubble {
+  transition: transform 0.2s;
+}
+.stat-bubble:hover {
+  transform: translateY(-6px);
+}
+.team-card {
+  transition: all 0.25s ease;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  border: 1px solid #eef2ff;
+}
+.team-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+.value-icon {
+  background-color: #eef2ff;
+  width: 64px;
+  height: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 28px;
+  font-size: 2rem;
+  color: #2563eb;
+  margin-bottom: 1rem;
+}/* Contact page styles */
+.hero-contact {
+  background: linear-gradient(135deg, #f8fafc 0%, #7d95ad 100%);
+  border-bottom-left-radius: 2rem;
+  border-bottom-right-radius: 2rem;
+}
+.contact-card {
+  transition: all 0.25s ease;
+  border-radius: 1.5rem;
+  border: 1px solid #eef2ff;
+  background: white;
+}
+.contact-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -12px rgba(0,0,0,0.08);
+  border-color: #cbd5e1;
+}
+.contact-icon {
+  width: 56px;
+  height: 56px;
+  background: #eef2ff;
+  border-radius: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: #2563eb;
+  margin-bottom: 1rem;
+}
+.form-control-custom {
+  border-radius: 1rem;
+  padding: 0.75rem 1.2rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s;
+}
+.form-control-custom:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+.faq-item {
+  border-bottom: 1px solid #edf2f7;
+  padding: 1rem 0;
 }
