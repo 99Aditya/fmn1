@@ -1,4 +1,6 @@
-@extends('layouts.app')
+@extends('frontend.layouts.app')
+
+@section('title', 'CareerElevate | ATS Insight Hub - Smart Resume Analysis')
 
 @section('content')
 <div class="container">
