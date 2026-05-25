@@ -47,7 +47,23 @@
         <li class="nav-item">
           <a class="nav-link text-white {{ request()->is('contact') ? 'fw-semibold' : '' }}" href="{{ url('/contact') }}">Contact</a>
         </li>
-        {{-- <li class="nav-item">
+        <li class="nav-item">
+        @if(auth()->check())
+          <li class="nav-item">
+            <form method="POST" action="{{ route('logout') }}" class="d-inline">
+              @csrf
+              <button type="submit" class="btn btn-link nav-link text-white">Logout</button>
+            </form>
+          </li>
+        @else
+          <li class="nav-item">
+            <a class="nav-link text-white" href="{{ route('login') }}">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-light btn-sm rounded-pill ms-2" href="{{ route('register') }}">Sign Up</a>
+          </li>
+        @endif
+        <li class="nav-item">
           <button
             id="darkModeToggle"
             class="btn btn-outline-light btn-outline-theme theme-toggle"
@@ -55,7 +71,7 @@
             <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
             <span id="themeText">Dark</span>
           </button>
-        </li> --}}
+        </li> 
       </ul>
     </div>
   </div>
