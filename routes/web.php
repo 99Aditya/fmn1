@@ -6,6 +6,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AtsController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\admin\AdminController;
+use App\Http\Controllers\admin\BlogController as AdminBlogController;
 
 Route::get('/', [HomeController::class, 'home']);
 Route::get('/community', [HomeController::class, 'community']);
@@ -35,3 +37,19 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/category/{category}', [BlogController::class, 'category'])->name('blog.category');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // Route::middleware('auth:admin')->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+        Route::get('/blog', [AdminBlogController::class, 'index'])->name('blog');
+        Route::get('/blog/create', [AdminBlogController::class, 'create'])->name('blog.create');
+        Route::post('/blog/store', [AdminBlogController::class, 'store'])->name('blog.store');
+        Route::get('/blog/edit/{blog}', [AdminBlogController::class, 'edit'])->name('blog.edit');
+        Route::post('/blog/update/{blog}', [AdminBlogController::class, 'update'])->name('blog.update');
+
+    // });
+});
