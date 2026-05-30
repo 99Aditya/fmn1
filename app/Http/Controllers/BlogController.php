@@ -2,77 +2,116 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\Storage;
+use App\Models\Blog;
+use App\Models\Category;
 
 class BlogController extends Controller
 {
     public function index()
     {
-        $disk = Storage::disk('local');
-        $posts = [];
-        $categories = [];
+        $blogs = Blog::published()
+            ->with('category', 'author')
+            ->orderByDesc('published_at')
+            ->paginate(9);
 
-        if ($disk->exists('blog_posts')) {
-            $files = $disk->files('blog_posts');
-            foreach ($files as $file) {
-                try {
-                    $json = json_decode($disk->get($file), true);
-                    if ($json && isset($json['title']) && isset($json['slug'])) {
-                        $posts[] = $json;
-                        if (!empty($json['category'])) {
-                            $categories[$json['category']] = $json['category'];
-                        }
-                    }
-                } catch (\Throwable $e) {
-                    // skip invalid files
-                }
-            }
-        }
+        $categories = Category::forBlogs()
+            ->whereHas('blogs', fn($q) => $q->published())
+            ->withCount(['blogs' => fn($q) => $q->published()])
+            ->orderBy('name')
+            ->get();
 
-        usort($posts, function ($a, $b) {
-            return strcmp($b['published_at'] ?? '', $a['published_at'] ?? '');
-        });
+        $popular = Blog::published()
+            ->orderByDesc('views')
+            ->limit(4)
+            ->get();
 
-        $categories = array_values($categories);
-        return view('frontend.blog', ['posts' => $posts, 'categories' => $categories]);
+        $tags = Blog::published()
+            ->whereNotNull('hashtags')
+            ->pluck('hashtags')
+            ->flatMap(fn($h) => array_map('trim', explode(',', $h)))
+            ->filter()
+            ->countBy()
+            ->sortDesc()
+            ->take(20)
+            ->keys();
+
+        return view('frontend.blog.index', compact('blogs', 'categories', 'popular', 'tags'));
     }
 
-    public function category($category)
+    public function category(Category $category)
     {
-        $disk = Storage::disk('local');
-        $posts = [];
+        $blogs = Blog::published()
+            ->where('category_id', $category->id)
+            ->with('author')
+            ->orderByDesc('published_at')
+            ->paginate(9);
 
-        if ($disk->exists('blog_posts')) {
-            $files = $disk->files('blog_posts');
-            foreach ($files as $file) {
-                try {
-                    $json = json_decode($disk->get($file), true);
-                    if ($json && isset($json['title']) && isset($json['slug']) && isset($json['category']) && $json['category'] === $category) {
-                        $posts[] = $json;
-                    }
-                } catch (\Throwable $e) {
-                    // skip invalid files
-                }
-            }
-        }
+        $categories = Category::forBlogs()
+            ->whereHas('blogs', fn($q) => $q->published())
+            ->withCount(['blogs' => fn($q) => $q->published()])
+            ->orderBy('name')
+            ->get();
 
-        usort($posts, function ($a, $b) {
-            return strcmp($b['published_at'] ?? '', $a['published_at'] ?? '');
-        });
+        $tags = Blog::published()
+            ->whereNotNull('hashtags')
+            ->pluck('hashtags')
+            ->flatMap(fn($h) => array_map('trim', explode(',', $h)))
+            ->filter()
+            ->countBy()
+            ->sortDesc()
+            ->take(20)
+            ->keys();
 
-        return view('frontend.blog', ['posts' => $posts, 'categories' => [$category], 'activeCategory' => $category]);
+        return view('frontend.blog.index', compact('blogs', 'categories', 'tags'))
+            ->with('activeCategory', $category);
     }
 
-    public function show($slug)
+    public function tag(string $tag)
     {
-        $disk = Storage::disk('local');
-        $path = "blog_posts/{$slug}.json";
+        $blogs = Blog::published()
+            ->where('hashtags', 'like', "%{$tag}%")
+            ->with('category', 'author')
+            ->orderByDesc('published_at')
+            ->paginate(9);
 
-        if (!$disk->exists($path)) {
-            abort(404);
-        }
+        $categories = Category::forBlogs()
+            ->whereHas('blogs', fn($q) => $q->published())
+            ->withCount(['blogs' => fn($q) => $q->published()])
+            ->orderBy('name')
+            ->get();
 
-        $post = json_decode($disk->get($path), true);
-        return view('frontend.blog_detail', ['post' => $post]);
+        $tags = Blog::published()
+            ->whereNotNull('hashtags')
+            ->pluck('hashtags')
+            ->flatMap(fn($h) => array_map('trim', explode(',', $h)))
+            ->filter()
+            ->countBy()
+            ->sortDesc()
+            ->take(20)
+            ->keys();
+
+        return view('frontend.blog.index', compact('blogs', 'categories', 'tags'))
+            ->with('activeTag', $tag);
+    }
+
+    public function show(string $slug)
+    {
+        $blog = Blog::published()
+            ->with('category', 'author')
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        $blog->incrementViews();
+
+        $related = Blog::published()
+            ->where('id', '!=', $blog->id)
+            ->where(function ($q) use ($blog) {
+                if ($blog->category_id) $q->where('category_id', $blog->category_id);
+            })
+            ->orderByDesc('published_at')
+            ->limit(3)
+            ->get();
+
+        return view('frontend.blog.show', compact('blog', 'related'));
     }
 }

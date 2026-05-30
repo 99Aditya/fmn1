@@ -183,8 +183,29 @@
 
                                 <li class="{{ request()->is('admin/blog*') ? 'active' : '' }}">
                                     <a href="{{ route('admin.blog') }}">
-                                        <span class="pcoded-micon"><i class="feather icon-home"></i></span>
+                                        <span class="pcoded-micon"><i class="feather icon-edit"></i></span>
                                         <span class="pcoded-mtext">Blog</span>
+                                    </a>
+                                </li>
+
+                                <li class="{{ request()->is('admin/categories*') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.categories.index') }}">
+                                        <span class="pcoded-micon"><i class="feather icon-tag"></i></span>
+                                        <span class="pcoded-mtext">Test Categories</span>
+                                    </a>
+                                </li>
+
+                                <li class="{{ request()->is('admin/tests*') && !request()->is('admin/bulk*') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.tests.index') }}">
+                                        <span class="pcoded-micon"><i class="feather icon-clipboard"></i></span>
+                                        <span class="pcoded-mtext">MCQ Tests</span>
+                                    </a>
+                                </li>
+
+                                <li class="{{ request()->is('admin/bulk*') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.bulk.tests.form') }}">
+                                        <span class="pcoded-micon"><i class="feather icon-upload-cloud"></i></span>
+                                        <span class="pcoded-mtext">Bulk Upload</span>
                                     </a>
                                 </li>
 

@@ -45,15 +45,52 @@
           </ul>
         </li>
         <li class="nav-item">
+          <a class="nav-link text-white {{ request()->is('tests*') ? 'fw-semibold' : '' }}" href="{{ route('tests.index') }}">MCQ Tests</a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link text-white {{ request()->is('contact') ? 'fw-semibold' : '' }}" href="{{ url('/contact') }}">Contact</a>
         </li>
         <li class="nav-item">
         @if(auth()->check())
           <li class="nav-item">
-            <form method="POST" action="{{ route('logout') }}" class="d-inline">
-              @csrf
-              <button type="submit" class="btn btn-link nav-link text-white">Logout</button>
-            </form>
+            <a class="nav-link text-white {{ request()->is('dashboard*') ? 'fw-semibold' : '' }}" href="{{ route('dashboard') }}">Dashboard</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-white" href="#" data-bs-toggle="dropdown">
+              <img src="{{ auth()->user()->avatar_url }}" alt="" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.4)">
+              <span class="d-none d-lg-inline">{{ Str::limit(auth()->user()->name, 14) }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" style="min-width:200px;border-radius:12px;border:1.5px solid #e8edf5;box-shadow:0 12px 32px rgba(0,0,0,.12);padding:6px">
+              <li>
+                <a class="dropdown-item rounded-3" href="{{ route('profile.show') }}" style="font-size:.88rem;padding:9px 14px">
+                  <i class="bi bi-person-fill me-2 text-primary"></i>My Profile
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item rounded-3" href="{{ route('profile.edit') }}" style="font-size:.88rem;padding:9px 14px">
+                  <i class="bi bi-pencil-fill me-2 text-primary"></i>Edit Profile
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item rounded-3" href="{{ route('connections.index') }}" style="font-size:.88rem;padding:9px 14px">
+                  <i class="bi bi-people-fill me-2 text-primary"></i>Connections
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item rounded-3" href="{{ route('dashboard') }}" style="font-size:.88rem;padding:9px 14px">
+                  <i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard
+                </a>
+              </li>
+              <li><hr class="dropdown-divider my-1"></li>
+              <li>
+                <form method="POST" action="{{ route('logout') }}">
+                  @csrf
+                  <button type="submit" class="dropdown-item rounded-3 text-danger" style="font-size:.88rem;padding:9px 14px">
+                    <i class="bi bi-box-arrow-right me-2"></i>Logout
+                  </button>
+                </form>
+              </li>
+            </ul>
           </li>
         @else
           <li class="nav-item">
