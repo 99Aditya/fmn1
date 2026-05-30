@@ -17,7 +17,7 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        DB::table('blog_category')->truncate();
+        // DB::table('blog_category')->truncate();
         Category::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 

@@ -12,4 +12,19 @@ class AttemptAnswer extends Model
         'selected_option_id',
         'is_correct'
     ];
+
+    public function question()
+    {
+        return $this->belongsTo(Question::class);
+    }
+
+    public function selectedOption()
+    {
+        return $this->belongsTo(QuestionOption::class, 'selected_option_id');
+    }
+
+    public function attempt()
+    {
+        return $this->belongsTo(TestAttempt::class, 'attempt_id');
+    }
 }
