@@ -113,7 +113,7 @@ class AtsController extends Controller
                             // Automatically log in and continue to show the ATS report.
                         } else {
                             return redirect()->guest(route('login'))
-                                ->with('status', 'Your resume was received. We found an account for this email or created one automatically. Please log in to view your ATS report.');
+                                ->with('status', 'Your  resume was received. We found an account for this email or created one automatically. Please log in to view your ATS report.');
                         }
                     }
                 }
