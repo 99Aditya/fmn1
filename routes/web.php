@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AtsController;
+use App\Http\Controllers\AdaptiveController;
+use App\Http\Controllers\DonationController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\TestController;
@@ -22,7 +25,7 @@ use App\Http\Controllers\admin\BulkUploadController as AdminBulkController;
 
 Route::get('/', [HomeController::class, 'home']);
 Route::get('/community', [HomeController::class, 'community']);
-Route::get('/ats', [HomeController::class, 'ats']);
+Route::get('/ats', [HomeController::class, 'ats'])->name('ats');
 Route::post('/ats/upload', [AtsController::class, 'upload'])->name('ats.upload');
 Route::get('/ats/process/{id}', [AtsController::class, 'process'])->name('ats.process');
 Route::get('/mock', [HomeController::class, 'mock']);
@@ -41,6 +44,14 @@ Route::get('/certificates/{certificate_no}', [CertificateController::class, 'sho
 Route::get('/u/{username}', [PublicProfileController::class, 'show'])->name('profile.public');
 Route::get('/about', [HomeController::class, 'about']);
 Route::get('/contact', [HomeController::class, 'contact']);
+
+// SEO sitemap
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+// Donations
+Route::get('/donate', [DonationController::class, 'show'])->name('donate');
+Route::post('/donate/order', [DonationController::class, 'createOrder'])->name('donate.order');
+Route::post('/donate/verify', [DonationController::class, 'verify'])->name('donate.verify');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -62,6 +73,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/tests/{test}/attempt/{attempt}', [TestAttemptController::class, 'show'])->name('tests.attempt.show');
     Route::post('/tests/{test}/attempt/{attempt}/submit', [TestAttemptController::class, 'submit'])->name('tests.attempt.submit');
     Route::get('/tests/{test}/result/{attempt}', [TestAttemptController::class, 'result'])->name('tests.attempt.result');
+
+    // Adaptive (paid) MCQ engine — difficulty adjusts per answer
+    Route::get('/adaptive/{test}', [AdaptiveController::class, 'show'])->name('adaptive.show');
+    Route::post('/adaptive/{test}/start', [AdaptiveController::class, 'start'])->name('adaptive.start');
+    Route::post('/adaptive/session/{session}/answer', [AdaptiveController::class, 'answer'])->name('adaptive.answer');
+    Route::get('/adaptive/session/{session}/result', [AdaptiveController::class, 'result'])->name('adaptive.result');
 
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/certificates', [UserDashboardController::class, 'certificates'])->name('dashboard.certificates');

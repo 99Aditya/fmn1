@@ -48,9 +48,20 @@
                                             <div class="card-body">
                                                 <div class="d-flex justify-content-between">
                                                     <div class="flex-grow-1">
+                                                        @php
+                                                            $diffMap = [1 => ['Very Easy','secondary'], 2 => ['Easy','success'], 3 => ['Medium','info'], 4 => ['Hard','warning'], 5 => ['Very Hard','danger']];
+                                                            $d = $diffMap[$q->difficulty] ?? ['—','secondary'];
+                                                        @endphp
                                                         <p class="mb-1">
                                                             <strong>Q{{ $loop->iteration }}.</strong> {{ $q->question }}
                                                             <span class="badge badge-info ml-2">{{ $q->marks }} mark{{ $q->marks > 1 ? 's' : '' }}</span>
+                                                            <span class="badge badge-{{ $d[1] }} ml-1">Lvl {{ $q->difficulty }} · {{ $d[0] }}</span>
+                                                            @if($q->is_pooled)
+                                                                <span class="badge badge-success ml-1"><i class="feather icon-check"></i> Adaptive pool</span>
+                                                            @else
+                                                                <span class="badge badge-secondary ml-1">Not pooled</span>
+                                                            @endif
+                                                            @if($q->topic)<span class="badge badge-light ml-1"><i class="feather icon-tag"></i> {{ $q->topic }}</span>@endif
                                                         </p>
                                                         <div class="row mt-2">
                                                             @foreach($q->options as $i => $opt)

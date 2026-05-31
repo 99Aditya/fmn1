@@ -51,6 +51,9 @@
           <a class="nav-link text-white {{ request()->is('contact') ? 'fw-semibold' : '' }}" href="{{ url('/contact') }}">Contact</a>
         </li>
         <li class="nav-item">
+          <a class="nav-link text-white d-inline-flex align-items-center gap-1 {{ request()->is('donate') ? 'fw-semibold' : '' }}" href="{{ route('donate') }}"><i class="bi bi-heart-fill text-danger"></i> Donate</a>
+        </li>
+        <li class="nav-item">
         @if(auth()->check())
           <li class="nav-item">
             <a class="nav-link text-white {{ request()->is('dashboard*') ? 'fw-semibold' : '' }}" href="{{ route('dashboard') }}">Dashboard</a>

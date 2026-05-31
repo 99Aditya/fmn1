@@ -27,6 +27,9 @@ class QuestionController extends Controller
             'question'    => 'required|string',
             'explanation' => 'nullable|string',
             'marks'       => 'required|integer|min:1',
+            'difficulty'  => 'required|integer|min:1|max:5',
+            'topic'       => 'nullable|string|max:120',
+            'is_pooled'   => 'nullable|boolean',
             'options'     => 'required|array|min:2',
             'options.*'   => 'required|string',
             'correct'     => 'required|integer',
@@ -38,6 +41,9 @@ class QuestionController extends Controller
             'question'       => $request->question,
             'explanation'    => $request->explanation,
             'marks'          => $request->marks,
+            'difficulty'     => $request->difficulty,
+            'topic'          => $request->topic,
+            'is_pooled'      => $request->boolean('is_pooled'),
             'question_order' => $order,
         ]);
 
@@ -65,6 +71,9 @@ class QuestionController extends Controller
             'question'    => 'required|string',
             'explanation' => 'nullable|string',
             'marks'       => 'required|integer|min:1',
+            'difficulty'  => 'required|integer|min:1|max:5',
+            'topic'       => 'nullable|string|max:120',
+            'is_pooled'   => 'nullable|boolean',
             'options'     => 'required|array|min:2',
             'options.*'   => 'required|string',
             'correct'     => 'required|integer',
@@ -74,6 +83,9 @@ class QuestionController extends Controller
             'question'    => $request->question,
             'explanation' => $request->explanation,
             'marks'       => $request->marks,
+            'difficulty'  => $request->difficulty,
+            'topic'       => $request->topic,
+            'is_pooled'   => $request->boolean('is_pooled'),
         ]);
 
         $question->options()->delete();

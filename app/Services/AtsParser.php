@@ -43,6 +43,10 @@ class AtsParser
         }
 
         $analysis = $this->analyzeText($text, $notes);
+        $contact = $this->extractContact($text);
+        $skills = $this->extractSkills($text);
+
+        $wordCount = $text === '' ? 0 : str_word_count($text);
 
         return [
             'score' => $analysis['score'],
@@ -51,8 +55,13 @@ class AtsParser
             'formatting' => $analysis['formatting'],
             'suggestions' => $analysis['suggestions'],
             'notes' => $notes,
-            'raw' => mb_substr($text, 0, 5000), 
+            'raw' => mb_substr($text, 0, 5000),
             'breakdown' => $analysis['breakdown'],
+            'extra' => $analysis['extra'] ?? [],
+            'contact' => $contact,
+            'skills_found' => $skills['flat'],
+            'skills_grouped' => $skills['grouped'],
+            'word_count' => $wordCount,
         ];
     }
 
@@ -81,7 +90,7 @@ class AtsParser
             'email' => preg_match('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i', $text) === 1,
             'phone' => preg_match('/(\+?\d[\d\s().-]{6,}\d)/', $text) === 1,
             'headings' => $this->detectSectionHeadings($lines) >= 4,
-            'tables' => preg_match('/\t|\|\s*\w+|\bcolumns?\b|<w:tbl>/i', $text) === 1,
+            'tables' => $this->detectTableLayout($text),
             'page_numbers' => preg_match('/\b(page\s+\d+|\d+\s+of\s+\d+)\b/i', $text) === 1,
             'images_or_graphics' => $this->detectGraphicsLikeContent($text),
             'header' => $header,
@@ -324,6 +333,8 @@ class AtsParser
         $breakdown['experience_entries_found'] = $experienceEntries;
         $breakdown['weak_phrases_found'] = $weakPhraseCount;
 
+        $extra = $this->buildInsights($details, $sections, $formatting, $breakdown, $summaryQuality, $score, $text, $lower);
+
         return [
             'score' => $score,
             'details' => $details,
@@ -331,7 +342,215 @@ class AtsParser
             'formatting' => $formatting,
             'suggestions' => array_values(array_unique($suggestions)),
             'breakdown' => $breakdown,
+            'extra' => $extra,
         ];
+    }
+
+    /**
+     * Build the advanced analytics layer: per-category gauges, a granular
+     * pass/fail checklist, ranked improvement opportunities (with the exact
+     * points each one recovers), a projected score, keyword analysis and
+     * concrete before/after rewrites taken from the candidate's own resume.
+     */
+    private function buildInsights(array $details, array $sections, array $formatting, array $breakdown, int $summaryQuality, int $score, string $text, string $lower): array
+    {
+        // Each check: [category, label, passed, points (recoverable), fix]
+        $checks = [
+            // Contact (max 17)
+            ['contact', 'Email address', $details['email'], 5, 'Add a professional email address to your header.'],
+            ['contact', 'Phone number', $details['phone'], 5, 'Add a phone number to your contact details.'],
+            ['contact', 'Clear header block', $details['header'], 4, 'Group your name, title and contact info in one block at the very top.'],
+            ['contact', 'Professional headline', $details['headline'], 3, 'Add a role-focused headline under your name, e.g. “Senior Data Analyst”.'],
+
+            // Structure (max 32)
+            ['structure', 'Professional summary', $sections['summary'], 6, 'Add a 2–4 sentence summary highlighting your value and focus.'],
+            ['structure', 'Experience section', $sections['experience'], 10, 'Add an Experience section with roles, companies and dates.'],
+            ['structure', 'Education section', $sections['education'], 5, 'Add an Education section with degrees, institutions and years.'],
+            ['structure', 'Skills section', $sections['skills'], 4, 'Add a dedicated Skills section with relevant tools and keywords.'],
+            ['structure', 'Clear section headings', $details['headings'], 3, 'Use clear headings such as Experience, Education and Skills.'],
+            ['structure', 'Dated experience entries', $details['chronological_dates'], 2, 'Give every role a clear start–end date range.'],
+            ['structure', 'Parseable role entries', $details['experience_entries'], 2, 'List each role as “Title — Company (dates)” on its own line.'],
+
+            // Achievements (max 20)
+            ['achievements', 'Quantified achievements', $details['metrics'], 6, 'Back up results with numbers, %, revenue or other measurable impact.'],
+            ['achievements', 'Strong action verbs', $details['action_verbs'], 6, 'Start bullets with verbs like Led, Built, Delivered, Optimized.'],
+            ['achievements', 'Results-focused summary', $details['summary_quality'], 4, 'Rewrite the summary around outcomes and strengths, not duties.'],
+            ['achievements', 'Role-specific keywords', $details['keywords'], 4, 'Mirror keywords from your target job descriptions.'],
+
+            // Formatting (max 19)
+            ['formatting', 'Bullet points', $details['bullets'], 4, 'Convert dense paragraphs into concise bullet points.'],
+            ['formatting', 'Date ranges present', $details['dates'], 4, 'Add explicit date ranges to roles and education.'],
+            ['formatting', 'ATS-safe skills list', ($formatting['skills_formatting'] ?? false), 4, 'Format skills as a clean comma or bullet separated list.'],
+            ['formatting', 'No weak phrasing', $details['no_weak_phrases'], 4, 'Replace weak phrases like “responsible for” with impact statements.'],
+            ['formatting', 'No first-person pronouns', $details['no_first_person'], 3, 'Remove “I”, “me”, “my” — resumes use an implied subject.'],
+        ];
+
+        $catMeta = [
+            'contact'      => ['label' => 'Contact Info',  'max' => 17, 'color' => '#2563eb'],
+            'structure'    => ['label' => 'Structure',     'max' => 32, 'color' => '#7c3aed'],
+            'achievements' => ['label' => 'Achievements',  'max' => 20, 'color' => '#0ea5e9'],
+            'formatting'   => ['label' => 'Formatting',    'max' => 19, 'color' => '#10b981'],
+            'quality'      => ['label' => 'Writing Depth', 'max' => 5,  'color' => '#f59e0b'],
+        ];
+
+        // Aggregate earned points per category from the checks.
+        $earned = ['contact' => 0, 'structure' => 0, 'achievements' => 0, 'formatting' => 0, 'quality' => 0];
+        $checkList = [];
+        $opportunities = [];
+        foreach ($checks as [$cat, $label, $passed, $points, $fix]) {
+            $passed = (bool) $passed;
+            if ($passed) {
+                $earned[$cat] += $points;
+            } else {
+                $opportunities[] = ['label' => $label, 'points' => $points, 'fix' => $fix, 'category' => $catMeta[$cat]['label']];
+            }
+            $checkList[] = ['category' => $catMeta[$cat]['label'], 'label' => $label, 'passed' => $passed, 'points' => $points, 'fix' => $fix];
+        }
+        // Writing depth is graded (0–5) rather than pass/fail.
+        $earned['quality'] = $summaryQuality;
+        if ($summaryQuality < 5) {
+            $opportunities[] = [
+                'label' => 'Deeper professional summary',
+                'points' => 5 - $summaryQuality,
+                'fix' => 'Expand the summary to 30–120 words with specialism, seniority and a headline achievement.',
+                'category' => 'Writing Depth',
+            ];
+        }
+
+        // Category gauges (percentage of max achieved) + radar benchmark.
+        $categories = [];
+        $benchmarkPct = 85; // what a strong, ATS-ready resume typically scores
+        foreach ($catMeta as $key => $meta) {
+            $val = $earned[$key];
+            $pct = $meta['max'] > 0 ? (int) round(($val / $meta['max']) * 100) : 0;
+            $categories[] = [
+                'key' => $key,
+                'label' => $meta['label'],
+                'earned' => $val,
+                'max' => $meta['max'],
+                'pct' => $pct,
+                'color' => $meta['color'],
+                'benchmark' => $benchmarkPct,
+                'status' => $pct >= 80 ? 'strong' : ($pct >= 50 ? 'fair' : 'weak'),
+            ];
+        }
+
+        // Rank opportunities by impact (points) descending.
+        usort($opportunities, fn($a, $b) => $b['points'] <=> $a['points']);
+
+        // Projected score after fixing the top 3 opportunities, and the ceiling.
+        $top3 = array_sum(array_map(fn($o) => $o['points'], array_slice($opportunities, 0, 3)));
+        $allFixable = array_sum(array_map(fn($o) => $o['points'], $opportunities));
+        $projected = min(100, $score + $top3);
+        $potential = min(100, $score + $allFixable);
+
+        // Weakest category (where the score is lagging most).
+        $weakest = null;
+        foreach ($categories as $c) {
+            if ($weakest === null || $c['pct'] < $weakest['pct']) {
+                $weakest = $c;
+            }
+        }
+
+        return [
+            'categories'     => $categories,
+            'checks'         => $checkList,
+            'opportunities'  => $opportunities,
+            'projected'      => $projected,
+            'potential'      => $potential,
+            'weakest'        => $weakest,
+            'keywords'       => $this->analyzeKeywords($lower),
+            'examples'       => $this->findImprovementExamples($text),
+            'passed_count'   => count(array_filter($checkList, fn($c) => $c['passed'])),
+            'total_count'    => count($checkList),
+        ];
+    }
+
+    /**
+     * Return which common industry keywords were found vs. recommended additions.
+     */
+    private function analyzeKeywords(string $lower): array
+    {
+        $keywords = ['leadership', 'strategy', 'management', 'agile', 'scrum', 'cloud', 'analytics', 'optimization', 'automation', 'collaboration', 'communication', 'stakeholder', 'project management', 'problem solving', 'data', 'design', 'testing', 'security', 'performance', 'delivery'];
+        $found = [];
+        $missing = [];
+        foreach ($keywords as $kw) {
+            if (strpos($lower, $kw) !== false) {
+                $found[] = $kw;
+            } else {
+                $missing[] = $kw;
+            }
+        }
+        return [
+            'found' => array_slice($found, 0, 12),
+            'missing' => array_slice($missing, 0, 6),
+            'found_count' => count($found),
+        ];
+    }
+
+    /**
+     * Pull real lines from the resume that use weak language or first-person
+     * voice and generate a concrete stronger rewrite for each.
+     */
+    private function findImprovementExamples(string $text): array
+    {
+        $lines = preg_split('/\r?\n/', $text);
+        $examples = [];
+
+        $map = [
+            'responsible for' => 'Led',
+            'was responsible for' => 'Led',
+            'in charge of' => 'Directed',
+            'duties included' => 'Delivered',
+            'tasked with' => 'Owned',
+            'worked on' => 'Developed',
+            'assisted with' => 'Supported',
+            'helped with' => 'Drove',
+            'participated in' => 'Contributed to',
+        ];
+
+        foreach ($lines as $line) {
+            if (count($examples) >= 3) break;
+            $clean = trim(preg_replace('/^[\s\-•*\x{2022}]+/u', '', $line));
+            if (mb_strlen($clean) < 18 || mb_strlen($clean) > 180) continue;
+            $low = mb_strtolower($clean);
+
+            foreach ($map as $weak => $strong) {
+                if (strpos($low, $weak) !== false) {
+                    $after = preg_replace('/' . preg_quote($weak, '/') . '/i', $strong, $clean, 1);
+                    $after = ucfirst(trim($after));
+                    $reason = 'Replaced weak phrase “' . $weak . '” with the action verb “' . $strong . '”';
+                    if (!preg_match('/\d/', $after)) {
+                        $after = rtrim($after, '.') . ', achieving [add a measurable result].';
+                        $reason .= ' and added a quantified result';
+                    }
+                    $examples[] = ['before' => $clean, 'after' => $after, 'reason' => $reason . '.'];
+                    continue 2;
+                }
+            }
+        }
+
+        // Fill remaining slots with first-person fixes.
+        if (count($examples) < 3) {
+            foreach ($lines as $line) {
+                if (count($examples) >= 3) break;
+                $clean = trim(preg_replace('/^[\s\-•*\x{2022}]+/u', '', $line));
+                if (mb_strlen($clean) < 18 || mb_strlen($clean) > 180) continue;
+                if (preg_match('/\b(I|my|me)\b/', $clean)) {
+                    $after = preg_replace('/\b(I|We)\s+/', '', $clean);
+                    $after = preg_replace('/\b(my|our)\s+/i', '', $after);
+                    $after = ucfirst(trim($after));
+                    if ($after === '' || $after === $clean) continue;
+                    $examples[] = [
+                        'before' => $clean,
+                        'after' => $after,
+                        'reason' => 'Removed first-person voice — resumes read stronger with an implied subject.',
+                    ];
+                }
+            }
+        }
+
+        return $examples;
     }
 
     private function extractPdfText(string $filePath, array &$notes): string
@@ -674,9 +893,179 @@ class AtsParser
 
     private function detectGraphicsLikeContent(string $text): bool
     {
-        if (preg_match('/(\.png|\.jpg|\.jpeg|\.gif|logo|graph|chart|infographic)/i', $text)) {
+        // Only flag genuine embedded-image references, not domain words like
+        // "chart", "graph" or "image" that legitimately appear in resume content.
+        return preg_match('/\.(png|jpe?g|gif|svg|bmp)\b/i', $text) === 1;
+    }
+
+    private function detectTableLayout(string $text): bool
+    {
+        // DOCX table markup is a definite signal.
+        if (stripos($text, '<w:tbl') !== false) {
             return true;
         }
-        return preg_match('/\b(image|logo|graphic|chart|diagram)\b/i', $text) === 1;
+        // Otherwise look for genuine columnar rows: several lines that each
+        // contain multiple tab stops or pipe separators.
+        $rows = 0;
+        foreach (preg_split('/\r?\n/', $text) as $line) {
+            if (substr_count($line, "\t") >= 2 || substr_count($line, '|') >= 2) {
+                $rows++;
+            }
+        }
+        return $rows >= 3;
+    }
+
+    private function extractContact(string $text): array
+    {
+        $contact = [
+            'name' => null,
+            'title' => null,
+            'email' => null,
+            'phone' => null,
+            'location' => null,
+            'linkedin' => null,
+            'github' => null,
+            'website' => null,
+        ];
+
+        // Normalise: collapse repeated spaces inside lines (PDFs often inject them) but keep line breaks.
+        $rawLines = preg_split('/\r?\n/', $text);
+        $lines = [];
+        foreach ($rawLines as $l) {
+            $l = trim(preg_replace('/[ \t]{2,}/', ' ', $l));
+            if ($l !== '') {
+                $lines[] = $l;
+            }
+        }
+
+        // --- Email ---
+        if (preg_match('/[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}/i', $text, $m)) {
+            $contact['email'] = strtolower($m[0]);
+        }
+
+        // --- Phone --- (require a phone-like token, avoid catching years/date ranges)
+        if (preg_match('/(\+?\d{1,3}[\s.\-]?)?(\(?\d{2,4}\)?[\s.\-]?){2,4}\d{2,4}/', $text, $m)) {
+            $candidate = trim($m[0]);
+            $digits = preg_replace('/\D/', '', $candidate);
+            if (strlen($digits) >= 7 && strlen($digits) <= 15) {
+                $contact['phone'] = $candidate;
+            }
+        }
+
+        // --- LinkedIn / GitHub / Website ---
+        if (preg_match('#(?:https?://)?(?:www\.)?linkedin\.com/(?:in|pub)/[A-Za-z0-9_\-/%]+#i', $text, $m)) {
+            $contact['linkedin'] = rtrim($m[0], '/');
+        }
+        if (preg_match('#(?:https?://)?(?:www\.)?github\.com/[A-Za-z0-9_\-]+#i', $text, $m)) {
+            $contact['github'] = rtrim($m[0], '/');
+        }
+        if (preg_match('#https?://[A-Za-z0-9.\-]+\.[A-Za-z]{2,}(?:/[A-Za-z0-9_\-./%]*)?#i', $text, $m)) {
+            $url = rtrim($m[0], '/');
+            if (!preg_match('/linkedin\.com|github\.com|mailto:/i', $url)) {
+                $contact['website'] = $url;
+            }
+        }
+
+        // --- Name --- search the first lines for a human-looking name.
+        $headerKeywords = '/\b(resume|cv|curriculum|profile|summary|objective|experience|education|skills|contact|phone|email|address|linkedin|github|portfolio|references)\b/i';
+        foreach (array_slice($lines, 0, 10) as $line) {
+            if (strlen($line) < 3 || strlen($line) > 50) continue;
+            if (preg_match($headerKeywords, $line)) continue;
+            if (preg_match('/[@\d]/', $line)) continue; // skip emails / phones / addresses
+            $words = preg_split('/\s+/', $line);
+            if (count($words) < 2 || count($words) > 4) continue;
+
+            // Title Case "John Doe"  OR  ALL CAPS "JOHN DOE"
+            if (preg_match('/^[A-Z][a-z\'.\-]+(\s+[A-Z][a-z\'.\-]+){1,3}$/', $line)
+                || preg_match('/^[A-Z][A-Z\'.\-]+(\s+[A-Z][A-Z\'.\-]+){1,3}$/', $line)) {
+                $contact['name'] = $this->titleCase($line);
+                break;
+            }
+        }
+
+        // --- Professional title / headline --- usually the line just after the name.
+        $titlePattern = '/\b(Engineer|Developer|Manager|Director|Designer|Analyst|Consultant|Specialist|Architect|Administrator|Coordinator|Lead|Scientist|Officer|Executive|Accountant|Marketer|Strategist|Recruiter|Researcher|Programmer|Intern|Associate|Founder|Freelancer)\b/i';
+        foreach (array_slice($lines, 0, 8) as $line) {
+            if ($contact['name'] && stripos($line, $contact['name']) !== false) continue;
+            if (preg_match('/[@]/', $line) || strlen($line) > 60) continue;
+            if (preg_match($titlePattern, $line)) {
+                $contact['title'] = $line;
+                break;
+            }
+        }
+
+        // --- Location --- "City, ST" / "City, Country" or after a Location: label.
+        if (preg_match('/\b(?:location|address|based in|city)\s*[:\-]\s*([A-Za-z][A-Za-z .\-]+,\s*[A-Za-z][A-Za-z .]+)/i', $text, $m)) {
+            $contact['location'] = trim($m[1]);
+        } elseif (preg_match('/\b([A-Z][a-z]+(?:\s[A-Z][a-z]+)?),\s*([A-Z]{2}|[A-Z][a-z]+)\b/', implode("\n", array_slice($lines, 0, 12)), $m)) {
+            // Avoid mistaking a name for a location
+            if (!$contact['name'] || stripos($m[0], $contact['name']) === false) {
+                $contact['location'] = trim($m[0]);
+            }
+        }
+
+        return $contact;
+    }
+
+    private function titleCase(string $value): string
+    {
+        return preg_replace_callback('/[A-Za-z\']+/', fn($w) => ucfirst(strtolower($w[0])), $value);
+    }
+
+    /**
+     * Detect skills grouped by category. Returns a flat de-duplicated list,
+     * plus the grouped map under the '_grouped' key for richer display.
+     */
+    private function extractSkills(string $text): array
+    {
+        $catalog = [
+            'Languages' => [
+                'PHP' => '/\bPHP\b/i', 'JavaScript' => '/\b(JavaScript|JS)\b/i', 'TypeScript' => '/\bTypeScript\b/i',
+                'Python' => '/\bPython\b/i', 'Java' => '/\bJava\b(?!Script)/i', 'C#' => '/\bC#|\.NET\b/i',
+                'C++' => '/\bC\+\+/i', 'Go' => '/\b(Golang|Go)\b/i', 'Ruby' => '/\bRuby\b/i',
+                'Swift' => '/\bSwift\b/i', 'Kotlin' => '/\bKotlin\b/i', 'Rust' => '/\bRust\b/i',
+                'SQL' => '/\bSQL\b/i', 'HTML' => '/\bHTML5?\b/i', 'CSS' => '/\bCSS3?\b/i',
+            ],
+            'Frameworks' => [
+                'Laravel' => '/\bLaravel\b/i', 'React' => '/\bReact(?:\.js)?\b/i', 'Vue.js' => '/\bVue(?:\.js)?\b/i',
+                'Angular' => '/\bAngular\b/i', 'Node.js' => '/\bNode(?:\.js)?\b/i', 'Express' => '/\bExpress(?:\.js)?\b/i',
+                'Django' => '/\bDjango\b/i', 'Flask' => '/\bFlask\b/i', 'Spring' => '/\bSpring\b/i',
+                'Next.js' => '/\bNext(?:\.js)?\b/i', 'Tailwind' => '/\bTailwind\b/i', 'Bootstrap' => '/\bBootstrap\b/i',
+                'jQuery' => '/\bjQuery\b/i', 'CodeIgniter' => '/\bCodeIgniter\b/i',
+            ],
+            'Databases' => [
+                'MySQL' => '/\bMySQL\b/i', 'PostgreSQL' => '/\b(PostgreSQL|Postgres)\b/i', 'MongoDB' => '/\bMongoDB\b/i',
+                'Redis' => '/\bRedis\b/i', 'SQLite' => '/\bSQLite\b/i', 'Oracle' => '/\bOracle\b/i',
+                'Firebase' => '/\bFirebase\b/i', 'Elasticsearch' => '/\bElasticsearch\b/i',
+            ],
+            'Cloud & DevOps' => [
+                'AWS' => '/\bAWS\b/i', 'Azure' => '/\bAzure\b/i', 'GCP' => '/\b(GCP|Google Cloud)\b/i',
+                'Docker' => '/\bDocker\b/i', 'Kubernetes' => '/\b(Kubernetes|K8s)\b/i', 'Git' => '/\bGit(?:Hub|Lab)?\b/i',
+                'CI/CD' => '/\b(CI\/CD|Jenkins|GitHub Actions)\b/i', 'Terraform' => '/\bTerraform\b/i',
+                'Linux' => '/\bLinux\b/i', 'Nginx' => '/\bNginx\b/i',
+            ],
+            'Tools & Methods' => [
+                'REST API' => '/\bREST(?:ful)?\b/i', 'GraphQL' => '/\bGraphQL\b/i', 'Agile' => '/\bAgile\b/i',
+                'Scrum' => '/\bScrum\b/i', 'Jira' => '/\bJira\b/i', 'Figma' => '/\bFigma\b/i',
+                'Photoshop' => '/\bPhotoshop\b/i', 'Excel' => '/\bExcel\b/i', 'Power BI' => '/\bPower ?BI\b/i',
+                'Tableau' => '/\bTableau\b/i',
+            ],
+        ];
+
+        $grouped = [];
+        $flat = [];
+        foreach ($catalog as $category => $patterns) {
+            foreach ($patterns as $skill => $pattern) {
+                if (preg_match($pattern, $text)) {
+                    $grouped[$category][] = $skill;
+                    $flat[] = $skill;
+                }
+            }
+        }
+
+        return [
+            'flat' => array_values(array_unique($flat)),
+            'grouped' => $grouped,
+        ];
     }
 }

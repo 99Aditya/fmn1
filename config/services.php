@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'razorpay' => [
+        'key'      => env('RAZORPAY_KEY'),
+        'secret'   => env('RAZORPAY_SECRET'),
+        'currency' => env('RAZORPAY_CURRENCY', 'INR'),
+        'payee'    => env('DONATION_PAYEE', 'FindMyNaukri'),
+    ],
+
 ];

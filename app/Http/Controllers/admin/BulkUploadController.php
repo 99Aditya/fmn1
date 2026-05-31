@@ -13,7 +13,7 @@ class BulkUploadController extends Controller
 {
     /* ────────────────────────────────────────────────
      |  QUESTIONS BULK UPLOAD
-     |  CSV columns: question, option_a, option_b, option_c, option_d, correct (A/B/C/D), marks, explanation
+     |  CSV columns: question, option_a, option_b, option_c, option_d, correct (A/B/C/D), marks, explanation, difficulty (1-5), topic
      * ──────────────────────────────────────────────── */
 
     public function questionsForm(Test $test)
@@ -41,10 +41,16 @@ class BulkUploadController extends Controller
             // skip blank rows
             if (count(array_filter($row)) === 0) continue;
 
-            [$question, $optA, $optB, $optC, $optD, $correct, $marks, $explanation] = array_pad($row, 8, '');
+            [$question, $optA, $optB, $optC, $optD, $correct, $marks, $explanation, $difficulty, $topic] = array_pad($row, 10, '');
 
             $question = trim($question);
             $correct  = strtoupper(trim($correct));
+
+            // Difficulty must be 1–5; default to 2 (Easy) when missing/invalid.
+            $difficulty = (int) trim($difficulty);
+            if ($difficulty < 1 || $difficulty > 5) {
+                $difficulty = 2;
+            }
 
             if (empty($question)) {
                 $errors[] = "Row " . ($imported + 2) . ": question text is empty — skipped.";
@@ -68,6 +74,9 @@ class BulkUploadController extends Controller
                 'question'       => $question,
                 'explanation'    => trim($explanation),
                 'marks'          => max(1, (int) $marks ?: 1),
+                'difficulty'     => $difficulty,
+                'topic'          => trim($topic) ?: null,
+                'is_pooled'      => true,
                 'question_order' => $order,
             ]);
 
@@ -105,7 +114,7 @@ class BulkUploadController extends Controller
 
         $callback = function () {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['question', 'option_a', 'option_b', 'option_c', 'option_d', 'correct', 'marks', 'explanation']);
+            fputcsv($out, ['question', 'option_a', 'option_b', 'option_c', 'option_d', 'correct', 'marks', 'explanation', 'difficulty', 'topic']);
             fputcsv($out, [
                 'What does PHP stand for?',
                 'PHP: Hypertext Preprocessor',
@@ -115,11 +124,14 @@ class BulkUploadController extends Controller
                 'A',
                 '1',
                 'PHP originally stood for Personal Home Page but now stands for PHP: Hypertext Preprocessor.',
+                '1',
+                'basics',
             ]);
             fputcsv($out, [
                 'Which keyword is used to define a function in Python?',
                 'func', 'def', 'function', 'define',
                 'B', '1', 'In Python, the "def" keyword is used to define a function.',
+                '2', 'functions',
             ]);
             fclose($out);
         };

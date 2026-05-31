@@ -36,9 +36,36 @@
                                             <label>Question <span class="text-danger">*</span></label>
                                             <textarea name="question" class="form-control" rows="3" required>{{ old('question', $question->question) }}</textarea>
                                         </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label>Marks <span class="text-danger">*</span></label>
+                                                    <input type="number" name="marks" class="form-control" value="{{ old('marks', $question->marks) }}" min="1" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label>Difficulty <span class="text-danger">*</span> <small class="text-muted">(adaptive)</small></label>
+                                                    <select name="difficulty" class="form-control" required>
+                                                        @php $diffLabels = [1 => '1 — Very Easy', 2 => '2 — Easy', 3 => '3 — Medium', 4 => '4 — Hard', 5 => '5 — Very Hard']; @endphp
+                                                        @foreach($diffLabels as $val => $lbl)
+                                                            <option value="{{ $val }}" {{ old('difficulty', $question->difficulty ?? 2) == $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label>Topic <small class="text-muted">(optional)</small></label>
+                                                    <input type="text" name="topic" class="form-control" value="{{ old('topic', $question->topic) }}" placeholder="e.g. closures">
+                                                </div>
+                                            </div>
+                                        </div>
                                         <div class="form-group">
-                                            <label>Marks <span class="text-danger">*</span></label>
-                                            <input type="number" name="marks" class="form-control" value="{{ old('marks', $question->marks) }}" min="1" style="width: 120px" required>
+                                            <label class="d-flex align-items-center" style="gap:8px">
+                                                <input type="checkbox" name="is_pooled" value="1" {{ old('is_pooled', $question->is_pooled) ? 'checked' : '' }}>
+                                                <span>Include in the <strong>adaptive</strong> question pool</span>
+                                            </label>
                                         </div>
 
                                         <hr>

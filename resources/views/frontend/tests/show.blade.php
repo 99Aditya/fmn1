@@ -1,5 +1,56 @@
 @extends('frontend.layouts.app')
-@section('title', $test->title)
+
+@php
+    $seoDescription = $test->description
+        ? \Illuminate\Support\Str::limit(strip_tags($test->description), 155)
+        : "Take the free {$test->title} online test with {$questionsCount} MCQ questions. Practice, check your score instantly and improve your skills on Find My Naukri.";
+    $diffLabel = ucfirst($test->difficulty);
+@endphp
+
+@section('title', $test->title . ' — Free Online Test & MCQ Quiz | Find My Naukri')
+@section('meta_description', $seoDescription)
+
+@section('head')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'Quiz',
+    'name' => $test->title,
+    'description' => $seoDescription,
+    'educationalLevel' => $diffLabel,
+    'url' => url()->current(),
+    'numberOfQuestions' => $questionsCount,
+    'about' => ['@type' => 'Thing', 'name' => $category->name],
+    'provider' => ['@type' => 'Organization', 'name' => 'Find My Naukri', 'url' => url('/')],
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+</script>
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'BreadcrumbList',
+    'itemListElement' => [
+        ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => url('/')],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Tests', 'item' => route('tests.index')],
+        ['@type' => 'ListItem', 'position' => 3, 'name' => $category->name, 'item' => route('tests.category', $category->slug)],
+        ['@type' => 'ListItem', 'position' => 4, 'name' => $test->title, 'item' => url()->current()],
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+</script>
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'FAQPage',
+    'mainEntity' => [
+        ['@type' => 'Question', 'name' => "How many questions are in the {$test->title}?",
+         'acceptedAnswer' => ['@type' => 'Answer', 'text' => "The {$test->title} contains {$questionsCount} multiple-choice questions and has a time limit of {$test->total_time} minutes."]],
+        ['@type' => 'Question', 'name' => "Is the {$test->title} free?",
+         'acceptedAnswer' => ['@type' => 'Answer', 'text' => "Yes. This {$diffLabel}-level test is completely free to take on Find My Naukri. You get your score instantly after submitting."]],
+        ['@type' => 'Question', 'name' => "What score do I need to pass?",
+         'acceptedAnswer' => ['@type' => 'Answer', 'text' => "You need at least {$test->passing_marks} marks out of {$test->total_marks} to pass this test."]],
+    ],
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}
+</script>
+@endsection
 
 @section('styles')
 <style>
@@ -345,6 +396,41 @@
       </div>
 
     </div>
+
+    {{-- SEO: crawlable About + FAQ content --}}
+    <div class="row mt-4">
+      <div class="col-lg-8">
+        <div class="info-section p-4 mb-4">
+          <h2 class="h4 fw-bold mb-3" style="color:#0f172a">About the {{ $test->title }}</h2>
+          <p class="text-secondary">
+            The <strong>{{ $test->title }}</strong> is a free {{ strtolower($test->difficulty) }}-level
+            {{ $category->name }} online test with <strong>{{ $questionsCount }} multiple-choice questions</strong>.
+            You have {{ $test->total_time }} minutes to complete it, and you need {{ $test->passing_marks }} out of
+            {{ $test->total_marks }} marks to pass. Get your score instantly and track your progress over time.
+          </p>
+          @if($test->description)
+            <p class="text-secondary mb-0">{{ strip_tags($test->description) }}</p>
+          @endif
+
+          <hr class="my-4">
+
+          <h2 class="h4 fw-bold mb-3" style="color:#0f172a">Frequently Asked Questions</h2>
+          <div class="mb-3">
+            <h3 class="h6 fw-bold">How many questions are in the {{ $test->title }}?</h3>
+            <p class="text-secondary mb-0">It contains {{ $questionsCount }} multiple-choice questions with a time limit of {{ $test->total_time }} minutes.</p>
+          </div>
+          <div class="mb-3">
+            <h3 class="h6 fw-bold">Is this test free?</h3>
+            <p class="text-secondary mb-0">Yes — the {{ $test->title }} is completely free to take on Find My Naukri, and your score is shown instantly.</p>
+          </div>
+          <div class="mb-0">
+            <h3 class="h6 fw-bold">What score do I need to pass?</h3>
+            <p class="text-secondary mb-0">You need at least {{ $test->passing_marks }} out of {{ $test->total_marks }} marks to pass.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 

@@ -11,7 +11,14 @@ class Question extends Model
         'question',
         'explanation',
         'marks',
-        'question_order'
+        'question_order',
+        'difficulty',
+        'topic',
+        'is_pooled',
+    ];
+
+    protected $casts = [
+        'is_pooled' => 'boolean',
     ];
 
     public function test()

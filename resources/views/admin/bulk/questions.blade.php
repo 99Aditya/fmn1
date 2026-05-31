@@ -96,6 +96,8 @@
                         <tr><td><code>correct</code></td><td><span class="badge badge-danger">Yes</span></td><td>Correct option letter: A, B, C or D</td><td>A</td></tr>
                         <tr><td><code>marks</code></td><td><span class="badge badge-secondary">No</span></td><td>Marks for this question (default: 1)</td><td>1</td></tr>
                         <tr><td><code>explanation</code></td><td><span class="badge badge-secondary">No</span></td><td>Explanation shown after answering</td><td>HTML is HyperText Markup Language</td></tr>
+                        <tr><td><code>difficulty</code></td><td><span class="badge badge-secondary">No</span></td><td>Adaptive difficulty 1–5 (1=very easy, 5=very hard; default 2)</td><td>3</td></tr>
+                        <tr><td><code>topic</code></td><td><span class="badge badge-secondary">No</span></td><td>Sub-topic label for variety in adaptive sessions</td><td>arrays</td></tr>
                       </tbody>
                     </table>
                   </div>
@@ -121,9 +123,9 @@
                 <div class="card-header"><h5 class="mb-0">CSV Preview</h5></div>
                 <div class="card-block">
                   <p class="text-muted small">Example CSV content:</p>
-                  <pre class="bg-dark text-white p-3 rounded" style="font-size:.72rem;overflow-x:auto">question,option_a,option_b,option_c,option_d,correct,marks,explanation
-"What is PHP?","Scripting lang","A database","A framework","An OS",A,1,"PHP is server-side"
-"Which tag for links?","&lt;a&gt;","&lt;link&gt;","&lt;href&gt;","&lt;url&gt;",A,1,"&lt;a&gt; is the anchor tag"</pre>
+                  <pre class="bg-dark text-white p-3 rounded" style="font-size:.72rem;overflow-x:auto">question,option_a,option_b,option_c,option_d,correct,marks,explanation,difficulty,topic
+"What is PHP?","Scripting lang","A database","A framework","An OS",A,1,"PHP is server-side",1,basics
+"Which tag for links?","&lt;a&gt;","&lt;link&gt;","&lt;href&gt;","&lt;url&gt;",A,1,"&lt;a&gt; is the anchor tag",2,html</pre>
                   <a href="{{ route('admin.bulk.questions.template', $test) }}" class="btn btn-block btn-outline-primary mt-2">
                     <i class="feather icon-download mr-1"></i> Download Template CSV
                   </a>

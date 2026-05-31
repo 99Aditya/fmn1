@@ -65,7 +65,7 @@ class AtsController extends Controller
                 'suggestions' => ["Job not found or processing failed. If you just uploaded, try refreshing after a few seconds."],
                 'raw' => '',
             ];
-            return view('frontend.ats_result', ['id' => $id, 'result' => $result, 'job' => null]);
+            return view('frontend.ats_result', ['id' => $id, 'result' => $result, 'job' => null, 'user' => Auth::user()]);
         }
 
         $job = json_decode($disk->get($jobKey), true);
@@ -135,12 +135,15 @@ class AtsController extends Controller
         }
 
         $job['status'] = 'processed';
-        $job['paid'] = $job['paid'] ?? false;
-        $job['premium_offer_shown'] = true;
         $job['result'] = $result;
         $disk->put($jobKey, json_encode($job));
 
-        return view('frontend.ats_result', ['id' => $id, 'result' => $result, 'job' => $job]);
+        return view('frontend.ats_result', [
+            'id' => $id,
+            'result' => $result,
+            'job' => $job,
+            'user' => Auth::user(),
+        ]);
     }
 
     private function extractResumeContact(string $text): array

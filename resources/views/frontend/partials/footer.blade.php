@@ -26,16 +26,16 @@
         <h5>Quick Links</h5>
         <ul class="list-unstyled">
           <li class="mb-2">
-            <a href="#" class="text-white-50">About Us</a>
+            <a href="{{ url('/about') }}" class="text-white-50">About Us</a>
           </li>
           <li class="mb-2">
-            <a href="#" class="text-white-50">Career Guide</a>
+            <a href="{{ url('/ats') }}" class="text-white-50">ATS Checker</a>
           </li>
           <li class="mb-2">
-            <a href="#" class="text-white-50">Success Stories</a>
+            <a href="{{ route('blog.index') }}" class="text-white-50">Blog</a>
           </li>
           <li class="mb-2">
-            <a href="#" class="text-white-50">Pricing</a>
+            <a href="{{ route('donate') }}" class="text-white-50"><i class="bi bi-heart-fill text-danger me-1"></i>Donate</a>
           </li>
         </ul>
       </div>
