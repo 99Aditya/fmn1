@@ -7,13 +7,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AtsController;
-<<<<<<< HEAD
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AdaptiveController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\SitemapController;
-=======
-use App\Http\Controllers\ContactController;
->>>>>>> 87bbd680b57e4741fb7bf0fa0c4d50de7d7e09b8
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\TestController;
