@@ -50,7 +50,7 @@
     @yield('styles')
     @yield('head')
   </head>
-  <body>
+  <body class="@yield('body_class')">
     @include('frontend.partials.header')
 
     @yield('content')

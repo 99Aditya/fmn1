@@ -141,20 +141,18 @@
                                 <div class="dropdown-primary dropdown">
                                     <div class="dropdown-toggle" data-toggle="dropdown">
                                         <img src="{{ asset('logo/user.png') }}" />
-                                        <span>Admin</span>
+                                        <span>{{ auth()->user()->name ?? 'Admin' }}</span>
                                         <i class="feather icon-chevron-down"></i>
                                     </div>
                                     <ul class="show-notification profile-notification dropdown-menu"
                                         data-dropdown-in="fadeIn" data-dropdown-out="fadeOut">
-                                        {{-- <li>
-                                            <a href="{{ route('root.profile') }}">
-                                                <i class="feather icon-log-out"></i> Profile
-                                            </a>
-                                        </li> --}}
                                         <li>
-                                            <a href="">
-                                                <i class="feather icon-log-out"></i> Logout
-                                            </a>
+                                            <form method="POST" action="{{ route('admin.logout') }}">
+                                                @csrf
+                                                <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start">
+                                                    <i class="feather icon-log-out"></i> Logout
+                                                </button>
+                                            </form>
                                         </li>
                                     </ul>
 
@@ -185,6 +183,13 @@
                                     <a href="{{ route('admin.blog') }}">
                                         <span class="pcoded-micon"><i class="feather icon-edit"></i></span>
                                         <span class="pcoded-mtext">Blog</span>
+                                    </a>
+                                </li>
+
+                                <li class="{{ request()->is('admin/contacts*') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.contacts.index') }}">
+                                        <span class="pcoded-micon"><i class="feather icon-mail"></i></span>
+                                        <span class="pcoded-mtext">Contacts</span>
                                     </a>
                                 </li>
 

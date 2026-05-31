@@ -1,6 +1,7 @@
 @extends('frontend.layouts.app')
 
 @section('title', 'Register')
+@section('body_class', 'page-inner')
 
 @section('content')
 <main class="container my-5 py-4">
@@ -16,7 +17,7 @@
 
             <div class="mb-3">
               <label for="name" class="form-label">Full name</label>
-              <input type="text" id="name" name="name" value="{{ old('name') }}" class="form-control @error('name') is-invalid @enderror" required autofocus>
+              <input type="text" id="name" name="name" value="{{ old('name') }}" class="form-control @error('name') is-invalid @enderror" autofocus>
               @error('name')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
@@ -24,7 +25,7 @@
 
             <div class="mb-3">
               <label for="email" class="form-label">Email address</label>
-              <input type="email" id="email" name="email" value="{{ old('email') }}" class="form-control @error('email') is-invalid @enderror" required>
+              <input type="email" id="email" name="email" value="{{ old('email') }}" class="form-control @error('email') is-invalid @enderror">
               @error('email')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
@@ -32,7 +33,7 @@
 
             <div class="mb-3">
               <label for="password" class="form-label">Password</label>
-              <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror" required>
+              <input type="password" id="password" name="password" class="form-control @error('password') is-invalid @enderror">
               @error('password')
                 <div class="invalid-feedback">{{ $message }}</div>
               @enderror
@@ -40,7 +41,7 @@
 
             <div class="mb-3">
               <label for="password_confirmation" class="form-label">Confirm password</label>
-              <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" required>
+              <input type="password" id="password_confirmation" name="password_confirmation" class="form-control">
             </div>
 
             <button type="submit" class="btn btn-primary w-100 py-2">Sign Up</button>
