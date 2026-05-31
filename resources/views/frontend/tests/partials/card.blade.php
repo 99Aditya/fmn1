@@ -27,13 +27,13 @@
     </div>
 
     @if($test->total_attempts > 0)
-      <div class="mb-3">
-        <div class="d-flex justify-content-between mb-1" style="font-size:.72rem; color:#94a3b8">
+      <div class="mb-3 pass-rate-wrap">
+        <div class="d-flex justify-content-between mb-1 pass-rate-header">
           <span>Pass rate</span>
-          <span style="color:#0f172a; font-weight:700">{{ $test->success_rate }}%</span>
+          <span class="pass-rate-value">{{ $test->success_rate }}%</span>
         </div>
-        <div style="height:4px; background:#f1f5f9; border-radius:99px; overflow:hidden">
-          <div style="width:{{ $test->success_rate }}%; height:100%; background:linear-gradient(90deg,#10b981,#34d399); border-radius:99px; transition:width .6s"></div>
+        <div class="pass-rate-track">
+          <div class="pass-rate-fill" style="width:{{ $test->success_rate }}%"></div>
         </div>
       </div>
     @endif

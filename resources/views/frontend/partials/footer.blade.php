@@ -37,6 +37,12 @@
           <li class="mb-2">
             <a href="#" class="text-white-50">Pricing</a>
           </li>
+          <li class="mb-2">
+            <a href="{{ url('/privacy-policy') }}" class="text-white-50">Privacy Policy</a>
+          </li>
+          <li class="mb-2">
+            <a href="{{ url('/terms-of-service') }}" class="text-white-50">Terms of Service</a>
+          </li>
         </ul>
       </div>
       <div class="col-md-4">

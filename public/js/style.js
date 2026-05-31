@@ -47,17 +47,20 @@ if (fullSwiperElement) {
     });
 }
 
-// Navbar scroll effect
+// Navbar scroll effect (transparent only over home hero slider)
 const navbar = document.getElementById("mainNavbar");
+const hasHeroSlider = document.querySelector(".fullpage-slider");
 if (navbar) {
-    window.addEventListener("scroll", () => {
-        if (window.scrollY > 50) {
+    const updateNavbar = () => {
+        if (window.scrollY > 50 || !hasHeroSlider) {
             navbar.classList.add("navbar-scrolled");
             navbar.classList.remove("bg-transparent");
         } else {
             navbar.classList.remove("navbar-scrolled");
         }
-    });
+    };
+    updateNavbar();
+    window.addEventListener("scroll", updateNavbar);
 }
 
 // Counter animation
@@ -106,12 +109,12 @@ function setTheme(theme) {
     if (theme === "dark") {
         if (themeIconSpan) themeIconSpan.className = "bi bi-sun-fill";
         if (themeTextSpan) themeTextSpan.innerText = "Light";
-        const brand = document.querySelector(".navbar-brand");
-        if (brand) brand.style.color = "#fff";
     } else {
         if (themeIconSpan) themeIconSpan.className = "bi bi-moon-stars-fill";
         if (themeTextSpan) themeTextSpan.innerText = "Dark";
     }
+    const brand = document.querySelector(".navbar-brand");
+    if (brand) brand.style.color = "";
     if (window.scrollY > 50 && navbar) navbar.classList.add("navbar-scrolled");
 }
 

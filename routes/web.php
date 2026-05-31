@@ -1,9 +1,13 @@
+
+
+
 <?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AtsController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\TestController;
@@ -13,6 +17,7 @@ use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\ConnectionController;
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\admin\AdminController;
 use App\Http\Controllers\admin\BlogController as AdminBlogController;
 use App\Http\Controllers\admin\CategoryController as AdminCategoryController;
@@ -28,7 +33,8 @@ Route::get('/ats/process/{id}', [AtsController::class, 'process'])->name('ats.pr
 Route::get('/mock', [HomeController::class, 'mock']);
 Route::get('/mcq-challenge', [HomeController::class, 'mcqChallenge']);
 Route::get('/mcq-test', [HomeController::class, 'mcqTest']);
-
+Route::get('/privacy-policy', [HomeController::class, 'privacyPolicy']);
+Route::get('/terms-of-service', [HomeController::class, 'termsOfService']);
 // MCQ / Test public routes
 Route::get('/tests', [TestController::class, 'index'])->name('tests.index');
 Route::get('/tests/{category:slug}', [TestController::class, 'category'])->name('tests.category');
@@ -40,7 +46,8 @@ Route::get('/certificates/{certificate_no}', [CertificateController::class, 'sho
 // Public profile (shareable)
 Route::get('/u/{username}', [PublicProfileController::class, 'show'])->name('profile.public');
 Route::get('/about', [HomeController::class, 'about']);
-Route::get('/contact', [HomeController::class, 'contact']);
+Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
+Route::post('/contact', [HomeController::class, 'submitContact'])->name('contact.submit');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -94,11 +101,14 @@ Route::get('/blog/tag/{tag}', [BlogController::class, 'tag'])->name('blog.tag');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::middleware('admin.guest')->group(function () {
+        Route::get('/its-naukri-login', [AdminAuthController::class, 'showLogin'])->name('login');
+        Route::post('/its-naukri-login', [AdminAuthController::class, 'login'])->name('login.submit');
+    });
 
-    // Route::middleware('auth:admin')->group(function () {
+    Route::middleware('admin')->group(function () {
+        Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
+
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
         Route::get('/blog', [AdminBlogController::class, 'index'])->name('blog');
         Route::get('/blog/create', [AdminBlogController::class, 'create'])->name('blog.create');
@@ -139,5 +149,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/bulk/tests', [AdminBulkController::class, 'testsImport'])->name('bulk.tests.import');
         Route::get('/bulk/tests/template', [AdminBulkController::class, 'testsTemplate'])->name('bulk.tests.template');
 
-    // });
+        // Contacts
+        Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
+        Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+    });
 });
