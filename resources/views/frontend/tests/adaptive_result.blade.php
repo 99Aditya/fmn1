@@ -55,7 +55,7 @@
     <div class="hero">
       <div class="ey">Adaptive Result · {{ $test->title }}</div>
       <div class="band">{{ $session->final_band }}</div>
-      <div class="lvl">You settled at difficulty level {{ number_format($session->final_level, 1) }} / 5.0</div>
+      <div class="lvl">Your skill rating is {{ (int) round($session->ability) }} / 100</div>
       <div class="score-ring">
         <svg width="150" height="150">
           <circle cx="75" cy="75" r="64" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="11"/>
@@ -74,13 +74,13 @@
     </div>
 
     <div class="card">
-      <h5><i class="bi bi-graph-up ic"></i>How the difficulty adapted</h5>
-      <p class="hint">Each point is a question. The line rose when you answered correctly and dropped when you missed — converging on your true level.</p>
+      <h5><i class="bi bi-graph-up ic"></i>How your skill rating evolved</h5>
+      <p class="hint">Each point is a question. Your rating rose when you answered correctly and dropped when you missed — converging on your true skill level.</p>
       <canvas id="diffChart" height="170"></canvas>
       <div class="legend">
         <i><span class="dotc" style="background:#16a34a"></span>Correct</i>
         <i><span class="dotc" style="background:#ef4444"></span>Wrong</i>
-        <i><span class="dotc" style="background:#2563eb"></span>Question difficulty</i>
+        <i><span class="dotc" style="background:#2563eb"></span>Skill rating (0–100)</i>
       </div>
     </div>
 
@@ -116,10 +116,10 @@ document.addEventListener('DOMContentLoaded', function () {
   var ring = document.getElementById('ring');
   if (ring) setTimeout(function(){ ring.style.transition='stroke-dashoffset 1.1s ease'; ring.style.strokeDashoffset = ring.dataset.target; }, 120);
 
-  // Difficulty progression chart
+  // Skill-rating progression chart (0–100 Elo ability)
   var log = @json($log);
   var labels = log.map(function(_, i){ return 'Q' + (i+1); });
-  var data = log.map(function(e){ return e.difficulty; });
+  var data = log.map(function(e){ return e.ability; });
   var ptColors = log.map(function(e){ return e.correct ? '#16a34a' : '#ef4444'; });
 
   new Chart(document.getElementById('diffChart'), {
@@ -131,11 +131,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }]},
     options: {
       scales: {
-        y: { min: 1, max: 5, ticks: { stepSize: 1, color:'#94a3b8', callback:function(v){ return 'L'+v; } }, grid:{color:'#eef1f7'} },
+        y: { min: 0, max: 100, ticks: { stepSize: 20, color:'#94a3b8' }, grid:{color:'#eef1f7'} },
         x: { ticks:{ color:'#94a3b8' }, grid:{ display:false } }
       },
       plugins: { legend: { display: false }, tooltip: { callbacks: {
-        label: function(c){ var e = log[c.dataIndex]; return 'Difficulty L' + e.difficulty + ' · ' + (e.correct ? 'Correct' : 'Wrong'); }
+        label: function(c){ var e = log[c.dataIndex]; return 'Skill ' + e.ability + '/100 · Q-difficulty ' + e.difficulty + '/10 · ' + (e.correct ? 'Correct' : 'Wrong'); }
       }}}
     }
   });

@@ -65,7 +65,7 @@ class AtsController extends Controller
                 'suggestions' => ["Job not found or processing failed. If you just uploaded, try refreshing after a few seconds."],
                 'raw' => '',
             ];
-            return view('frontend.ats_result', ['id' => $id, 'result' => $result, 'job' => null, 'user' => Auth::user()]);
+            return view('frontend.ats_result', ['id' => $id, 'result' => $result, 'job' => null, 'user' => Auth::user(), 'isPro' => Auth::check() && Auth::user()->canUse('advanced_ats')]);
         }
 
         $job = json_decode($disk->get($jobKey), true);
@@ -143,6 +143,7 @@ class AtsController extends Controller
             'result' => $result,
             'job' => $job,
             'user' => Auth::user(),
+            'isPro' => Auth::check() && Auth::user()->canUse('advanced_ats'),
         ]);
     }
 

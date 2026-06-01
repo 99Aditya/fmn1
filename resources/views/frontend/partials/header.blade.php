@@ -66,6 +66,11 @@
                 </a>
               </li>
               <li>
+                <a class="dropdown-item" href="{{ route('billing') }}">
+                  <i class="bi bi-gem me-2 text-primary"></i>My Subscription
+                </a>
+              </li>
+              <li>
                 <a class="dropdown-item" href="{{ route('connections.index') }}">
                   <i class="bi bi-people-fill me-2 text-primary"></i>Connections
                 </a>

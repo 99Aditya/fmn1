@@ -11,6 +11,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\AdaptiveController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\TestController;
@@ -27,6 +28,8 @@ use App\Http\Controllers\admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\admin\TestController as AdminTestController;
 use App\Http\Controllers\admin\QuestionController as AdminQuestionController;
 use App\Http\Controllers\admin\BulkUploadController as AdminBulkController;
+use App\Http\Controllers\admin\PlanController as AdminPlanController;
+use App\Http\Controllers\admin\SubscriptionController as AdminSubscriptionController;
 
 Route::get('/', [HomeController::class, 'home']);
 Route::get('/community', [HomeController::class, 'community']);
@@ -55,6 +58,9 @@ Route::post('/contact', [HomeController::class, 'submitContact'])->name('contact
 // SEO sitemap
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
+// Public pricing page
+Route::get('/pricing', [SubscriptionController::class, 'pricing'])->name('pricing');
+
 // Donations
 Route::get('/donate', [DonationController::class, 'show'])->name('donate');
 Route::post('/donate/order', [DonationController::class, 'createOrder'])->name('donate.order');
@@ -81,11 +87,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/tests/{test}/attempt/{attempt}/submit', [TestAttemptController::class, 'submit'])->name('tests.attempt.submit');
     Route::get('/tests/{test}/result/{attempt}', [TestAttemptController::class, 'result'])->name('tests.attempt.result');
 
-    // Adaptive (paid) MCQ engine — difficulty adjusts per answer
-    Route::get('/adaptive/{test}', [AdaptiveController::class, 'show'])->name('adaptive.show');
-    Route::post('/adaptive/{test}/start', [AdaptiveController::class, 'start'])->name('adaptive.start');
-    Route::post('/adaptive/session/{session}/answer', [AdaptiveController::class, 'answer'])->name('adaptive.answer');
-    Route::get('/adaptive/session/{session}/result', [AdaptiveController::class, 'result'])->name('adaptive.result');
+    // Adaptive (Pro) MCQ engine — difficulty adjusts per answer
+    Route::middleware('pro:adaptive')->group(function () {
+        Route::get('/adaptive/{test}', [AdaptiveController::class, 'show'])->name('adaptive.show');
+        Route::post('/adaptive/{test}/start', [AdaptiveController::class, 'start'])->name('adaptive.start');
+        Route::post('/adaptive/session/{session}/answer', [AdaptiveController::class, 'answer'])->name('adaptive.answer');
+        Route::get('/adaptive/session/{session}/result', [AdaptiveController::class, 'result'])->name('adaptive.result');
+    });
+
+    // Subscription billing + checkout
+    Route::get('/billing', [SubscriptionController::class, 'billing'])->name('billing');
+    Route::post('/subscribe/{plan}/order', [SubscriptionController::class, 'createOrder'])->name('subscribe.order');
+    Route::post('/subscribe/{plan}/verify', [SubscriptionController::class, 'verify'])->name('subscribe.verify');
 
     Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/certificates', [UserDashboardController::class, 'certificates'])->name('dashboard.certificates');
@@ -169,5 +182,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Contacts
         Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
         Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+
+        // Subscription plans
+        Route::get('/plans', [AdminPlanController::class, 'index'])->name('plans.index');
+        Route::get('/plans/create', [AdminPlanController::class, 'create'])->name('plans.create');
+        Route::post('/plans', [AdminPlanController::class, 'store'])->name('plans.store');
+        Route::get('/plans/{plan}/edit', [AdminPlanController::class, 'edit'])->name('plans.edit');
+        Route::put('/plans/{plan}', [AdminPlanController::class, 'update'])->name('plans.update');
+        Route::delete('/plans/{plan}', [AdminPlanController::class, 'destroy'])->name('plans.destroy');
+
+        // Subscribers
+        Route::get('/subscriptions', [AdminSubscriptionController::class, 'index'])->name('subscriptions.index');
     });
 });

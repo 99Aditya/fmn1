@@ -4,16 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\AdaptiveSession;
 use App\Models\Question;
-use App\Models\QuestionOption;
 use App\Models\Test;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AdaptiveController extends Controller
 {
-    private const START_DIFFICULTY = 2;
+    // Question difficulty is authored on a 1–10 scale.
     private const MIN_DIFFICULTY = 1;
-    private const MAX_DIFFICULTY = 5;
+    private const MAX_DIFFICULTY = 10;
+
+    // User ability is an Elo-style rating on a 0–100 scale.
+    private const START_ABILITY = 50.0;
+    private const MIN_ABILITY = 0.0;
+    private const MAX_ABILITY = 100.0;
+    private const K_FACTOR = 16.0;   // how fast ability moves per answer
+    private const ELO_SCALE = 25.0;  // spread of the logistic curve
+
     private const DEFAULT_MAX_QUESTIONS = 12;
 
     /** Landing / start screen for an adaptive test. */
@@ -21,7 +28,6 @@ class AdaptiveController extends Controller
     {
         $pool = $test->questions()->where('is_pooled', true)->count();
 
-        // Resume an in-progress session if one exists.
         $session = AdaptiveSession::where('user_id', Auth::id())
             ->where('test_id', $test->id)
             ->where('status', 'in_progress')
@@ -44,7 +50,6 @@ class AdaptiveController extends Controller
             return response()->json(['message' => 'This test does not have enough questions for an adaptive session yet.'], 422);
         }
 
-        // Reuse any existing in-progress session instead of stacking duplicates.
         $session = AdaptiveSession::where('user_id', Auth::id())
             ->where('test_id', $test->id)
             ->where('status', 'in_progress')
@@ -55,7 +60,8 @@ class AdaptiveController extends Controller
             $session = AdaptiveSession::create([
                 'user_id'            => Auth::id(),
                 'test_id'            => $test->id,
-                'current_difficulty' => self::START_DIFFICULTY,
+                'ability'            => self::START_ABILITY,
+                'current_difficulty' => $this->abilityToDifficulty(self::START_ABILITY),
                 'max_questions'      => min(self::DEFAULT_MAX_QUESTIONS, $poolCount),
                 'served_ids'         => [],
                 'log'                => [],
@@ -70,7 +76,7 @@ class AdaptiveController extends Controller
         return response()->json($payload);
     }
 
-    /** Grade the pending answer, move the ladder, return the next question or finish. */
+    /** Grade the pending answer, update the Elo rating, return next question or finish. */
     public function answer(Request $request, AdaptiveSession $session)
     {
         $this->authorizeSession($session);
@@ -94,7 +100,6 @@ class AdaptiveController extends Controller
             return response()->json(['message' => 'Question not found.'], 404);
         }
 
-        // The selected option must belong to this question.
         $option = $question->options->firstWhere('id', (int) $data['option_id']);
         if (!$option) {
             return response()->json(['message' => 'Invalid option.'], 422);
@@ -103,21 +108,29 @@ class AdaptiveController extends Controller
         $isCorrect = (bool) $option->is_correct;
         $correctOption = $question->options->firstWhere('is_correct', true);
 
-        // --- Difficulty ladder ---
+        // --- Elo update ---
+        $ability    = (float) $session->ability;
+        $qRating    = $this->difficultyToRating((int) $question->difficulty);
+        $expected   = 1 / (1 + pow(10, ($qRating - $ability) / self::ELO_SCALE));
+        $actual     = $isCorrect ? 1.0 : 0.0;
+        $ability   += self::K_FACTOR * ($actual - $expected);
+        $ability    = max(self::MIN_ABILITY, min(self::MAX_ABILITY, $ability));
+
+        $session->ability = round($ability, 2);
+        $session->current_difficulty = $this->abilityToDifficulty($ability);
+
         if ($isCorrect) {
             $session->correct_count++;
-            $session->current_difficulty = min(self::MAX_DIFFICULTY, $session->current_difficulty + 1);
         } else {
             $session->wrong_count++;
-            $session->current_difficulty = max(self::MIN_DIFFICULTY, $session->current_difficulty - 1);
         }
-
         $session->questions_answered++;
 
         $log = $session->log ?? [];
         $log[] = [
             'question_id' => $question->id,
             'difficulty'  => (int) $question->difficulty,
+            'ability'     => round($ability, 1),
             'correct'     => $isCorrect,
         ];
         $session->log = $log;
@@ -125,10 +138,10 @@ class AdaptiveController extends Controller
         $session->save();
 
         $feedback = [
-            'correct'            => $isCorrect,
-            'correct_option_id'  => $correctOption?->id,
-            'explanation'        => $question->explanation,
-            'current_level'      => $session->current_difficulty,
+            'correct'           => $isCorrect,
+            'correct_option_id' => $correctOption?->id,
+            'explanation'       => $question->explanation,
+            'ability'           => (int) round($ability),
         ];
 
         // Finished?
@@ -157,7 +170,7 @@ class AdaptiveController extends Controller
         return response()->json($next);
     }
 
-    /** Final result page with the difficulty-progression graph. */
+    /** Final result page with the ability-progression graph. */
     public function result(AdaptiveSession $session)
     {
         $this->authorizeSession($session);
@@ -175,13 +188,14 @@ class AdaptiveController extends Controller
     }
 
     /**
-     * Pick the next unseen question near the current difficulty and return the
-     * JSON payload the front-end renders. Sets it as the pending question.
+     * Pick the next unseen question whose difficulty best matches the user's
+     * current ability, and return the JSON payload the front-end renders.
      */
     private function serveNext(AdaptiveSession $session): array
     {
         $served = $session->served_ids ?? [];
-        $question = $this->pickQuestion($session->test_id, $session->current_difficulty, $served);
+        $target = $this->abilityToDifficulty((float) $session->ability);
+        $question = $this->pickQuestion($session->test_id, $target, $served);
 
         if (!$question) {
             return ['done' => true, 'redirect' => route('adaptive.result', $session->id)];
@@ -198,8 +212,8 @@ class AdaptiveController extends Controller
                 'answered' => $session->questions_answered,
                 'total'    => $session->max_questions,
             ],
-            'current_level' => $session->current_difficulty,
-            'question'      => [
+            'ability'  => (int) round($session->ability),
+            'question' => [
                 'id'         => $question->id,
                 'text'       => $question->question,
                 'difficulty' => (int) $question->difficulty,
@@ -240,39 +254,43 @@ class AdaptiveController extends Controller
         return null;
     }
 
-    /** Compute the final level, score and band, then close the session. */
+    /** Close the session: final ability becomes the 0–100 skill score + band. */
     private function finalize(AdaptiveSession $session): void
     {
-        $log = $session->log ?? [];
-        $answered = max(1, count($log));
-
-        // Final level = average difficulty of the last few questions they faced.
-        $tail = array_slice($log, -5);
-        $level = count($tail) ? array_sum(array_column($tail, 'difficulty')) / count($tail) : self::START_DIFFICULTY;
-        $level = round($level, 1);
-
-        $accuracy = $session->correct_count / $answered; // 0–1
-
-        // Blend difficulty reached (70%) with accuracy (30%) into a 0–100 score.
-        $score = (int) round(($level / self::MAX_DIFFICULTY) * 70 + $accuracy * 30);
+        $ability = (float) $session->ability;
+        $score = (int) round($ability);
         $score = max(0, min(100, $score));
 
-        $session->final_level = $level;
         $session->final_score = $score;
-        $session->final_band  = $this->band($level);
+        $session->final_level = round($ability / 10, 1); // legacy 0–10 representation
+        $session->final_band  = $this->band($ability);
         $session->status = 'completed';
         $session->completed_at = now();
         $session->save();
     }
 
-    private function band(float $level): string
+    /** Map a 1–10 question difficulty to a 0–100 rating (centre of its band). */
+    private function difficultyToRating(int $difficulty): float
+    {
+        $difficulty = max(self::MIN_DIFFICULTY, min(self::MAX_DIFFICULTY, $difficulty));
+        return ($difficulty - 0.5) * 10; // 1 → 5, 5 → 45, 10 → 95
+    }
+
+    /** Map a 0–100 ability back to the closest 1–10 difficulty band. */
+    private function abilityToDifficulty(float $ability): int
+    {
+        $d = (int) round($ability / 10 + 0.5);
+        return max(self::MIN_DIFFICULTY, min(self::MAX_DIFFICULTY, $d));
+    }
+
+    private function band(float $ability): string
     {
         return match (true) {
-            $level < 1.5 => 'Beginner',
-            $level < 2.5 => 'Elementary',
-            $level < 3.5 => 'Intermediate',
-            $level < 4.5 => 'Advanced',
-            default      => 'Expert',
+            $ability < 20 => 'Beginner',
+            $ability < 40 => 'Elementary',
+            $ability < 60 => 'Intermediate',
+            $ability < 80 => 'Advanced',
+            default       => 'Expert',
         };
     }
 

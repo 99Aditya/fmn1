@@ -47,10 +47,10 @@
                                                 <div class="form-group">
                                                     <label>Difficulty <span class="text-danger">*</span> <small class="text-muted">(adaptive)</small></label>
                                                     <select name="difficulty" class="form-control" required>
-                                                        @php $diffLabels = [1 => '1 — Very Easy', 2 => '2 — Easy', 3 => '3 — Medium', 4 => '4 — Hard', 5 => '5 — Very Hard']; @endphp
-                                                        @foreach($diffLabels as $val => $lbl)
-                                                            <option value="{{ $val }}" {{ old('difficulty', 2) == $val ? 'selected' : '' }}>{{ $lbl }}</option>
-                                                        @endforeach
+                                                        @php $bands = [1=>'Very Easy',2=>'Very Easy',3=>'Easy',4=>'Easy',5=>'Medium',6=>'Medium',7=>'Hard',8=>'Hard',9=>'Very Hard',10=>'Very Hard']; @endphp
+                                                        @for($v = 1; $v <= 10; $v++)
+                                                            <option value="{{ $v }}" {{ old('difficulty', 5) == $v ? 'selected' : '' }}>{{ $v }} — {{ $bands[$v] }}</option>
+                                                        @endfor
                                                     </select>
                                                 </div>
                                             </div>

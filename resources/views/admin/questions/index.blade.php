@@ -49,13 +49,19 @@
                                                 <div class="d-flex justify-content-between">
                                                     <div class="flex-grow-1">
                                                         @php
-                                                            $diffMap = [1 => ['Very Easy','secondary'], 2 => ['Easy','success'], 3 => ['Medium','info'], 4 => ['Hard','warning'], 5 => ['Very Hard','danger']];
-                                                            $d = $diffMap[$q->difficulty] ?? ['—','secondary'];
+                                                            $lvl = (int) $q->difficulty;
+                                                            $d = match (true) {
+                                                                $lvl <= 2 => ['Very Easy', 'secondary'],
+                                                                $lvl <= 4 => ['Easy', 'success'],
+                                                                $lvl <= 6 => ['Medium', 'info'],
+                                                                $lvl <= 8 => ['Hard', 'warning'],
+                                                                default   => ['Very Hard', 'danger'],
+                                                            };
                                                         @endphp
                                                         <p class="mb-1">
                                                             <strong>Q{{ $loop->iteration }}.</strong> {{ $q->question }}
                                                             <span class="badge badge-info ml-2">{{ $q->marks }} mark{{ $q->marks > 1 ? 's' : '' }}</span>
-                                                            <span class="badge badge-{{ $d[1] }} ml-1">Lvl {{ $q->difficulty }} · {{ $d[0] }}</span>
+                                                            <span class="badge badge-{{ $d[1] }} ml-1">Lvl {{ $q->difficulty }}/10 · {{ $d[0] }}</span>
                                                             @if($q->is_pooled)
                                                                 <span class="badge badge-success ml-1"><i class="feather icon-check"></i> Adaptive pool</span>
                                                             @else

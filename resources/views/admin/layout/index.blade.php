@@ -214,6 +214,20 @@
                                     </a>
                                 </li>
 
+                                <li class="{{ request()->is('admin/plans*') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.plans.index') }}">
+                                        <span class="pcoded-micon"><i class="feather icon-package"></i></span>
+                                        <span class="pcoded-mtext">Plans</span>
+                                    </a>
+                                </li>
+
+                                <li class="{{ request()->is('admin/subscriptions*') ? 'active' : '' }}">
+                                    <a href="{{ route('admin.subscriptions.index') }}">
+                                        <span class="pcoded-micon"><i class="feather icon-credit-card"></i></span>
+                                        <span class="pcoded-mtext">Subscribers</span>
+                                    </a>
+                                </li>
+
                                 {{-- <li class="">
                                     <a href="javascript:void(0)">
                                         <span class="pcoded-micon"><i class="feather icon-info"></i></span>

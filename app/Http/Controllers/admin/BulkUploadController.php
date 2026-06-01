@@ -46,10 +46,10 @@ class BulkUploadController extends Controller
             $question = trim($question);
             $correct  = strtoupper(trim($correct));
 
-            // Difficulty must be 1–5; default to 2 (Easy) when missing/invalid.
+            // Difficulty must be 1–10; default to 5 (Medium) when missing/invalid.
             $difficulty = (int) trim($difficulty);
-            if ($difficulty < 1 || $difficulty > 5) {
-                $difficulty = 2;
+            if ($difficulty < 1 || $difficulty > 10) {
+                $difficulty = 5;
             }
 
             if (empty($question)) {

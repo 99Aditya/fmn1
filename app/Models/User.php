@@ -79,6 +79,51 @@ class User extends Authenticatable
         return $this->hasMany(TestAttempt::class);
     }
 
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    /** Cached current active subscription for the lifetime of the request. */
+    private ?Subscription $activeSubscriptionCache = null;
+    private bool $activeSubscriptionLoaded = false;
+
+    /** The user's current active subscription, if any. */
+    public function activeSubscription(): ?Subscription
+    {
+        if (!$this->activeSubscriptionLoaded) {
+            $this->activeSubscriptionCache = $this->subscriptions()
+                ->active()
+                ->with('plan')
+                ->latest('ends_at')
+                ->first();
+            $this->activeSubscriptionLoaded = true;
+        }
+
+        return $this->activeSubscriptionCache;
+    }
+
+    /** Is the user on a paid (non-free) active plan? */
+    public function isPro(): bool
+    {
+        $sub = $this->activeSubscription();
+        return $sub && $sub->plan && !$sub->plan->is_free;
+    }
+
+    /** Does the user's active plan grant a given capability? */
+    public function canUse(string $feature): bool
+    {
+        $sub = $this->activeSubscription();
+        return $sub && $sub->plan ? $sub->plan->grants($feature) : false;
+    }
+
+    /** Human label for the current plan. */
+    public function planName(): string
+    {
+        $sub = $this->activeSubscription();
+        return $sub && $sub->plan ? $sub->plan->name : 'Free';
+    }
+
     // Connections sent by this user
     public function sentConnections()
     {

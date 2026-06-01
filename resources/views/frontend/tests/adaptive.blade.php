@@ -28,8 +28,11 @@
 .qbar .track { flex:1; height:9px; background:#e4e9f4; border-radius:50px; overflow:hidden; }
 .qbar .fill { height:100%; width:0; background:linear-gradient(90deg,#2563eb,#3b82f6); border-radius:50px; transition:width .4s; }
 .qbar .lvl { font-size:.78rem; font-weight:800; color:#1d4ed8; white-space:nowrap; }
-.diff-pills { display:flex; gap:4px; }
-.diff-pills span { width:18px; height:6px; border-radius:50px; background:#e2e8f0; }
+.diff-row { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+.diff-label { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#94a3b8; }
+.diff-num { font-size:.78rem; font-weight:800; color:#f59e0b; }
+.diff-pills { display:flex; gap:3px; }
+.diff-pills span { width:13px; height:6px; border-radius:50px; background:#e2e8f0; }
 .diff-pills span.on { background:#f59e0b; }
 .qno { font-size:.76rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#94a3b8; }
 .qtext { font-size:1.18rem; font-weight:700; color:#0f172a; line-height:1.5; margin:8px 0 20px; }
@@ -89,9 +92,13 @@
         <div class="qbar">
           <span class="qno" id="qNo">Question 1</span>
           <div class="track"><div class="fill" id="qFill"></div></div>
-          <span class="lvl">Level <span id="lvlNum">2</span></span>
+          <span class="lvl">Skill <span id="abilityNum">50</span>/100</span>
         </div>
-        <div class="diff-pills" id="diffPills"></div>
+        <div class="diff-row">
+          <span class="diff-label">Question difficulty</span>
+          <div class="diff-pills" id="diffPills"></div>
+          <span class="diff-num" id="diffNum"></span>
+        </div>
 
         <div class="qtext" id="qText">Loading…</div>
         <div class="opts" id="optBox"></div>
@@ -126,7 +133,7 @@
   var startErr = document.getElementById('startErr');
 
   var qNo = document.getElementById('qNo'), qFill = document.getElementById('qFill');
-  var lvlNum = document.getElementById('lvlNum'), diffPills = document.getElementById('diffPills');
+  var abilityNum = document.getElementById('abilityNum'), diffPills = document.getElementById('diffPills'), diffNum = document.getElementById('diffNum');
   var qText = document.getElementById('qText'), optBox = document.getElementById('optBox');
   var feedbackBox = document.getElementById('feedbackBox'), fbTitle = document.getElementById('fbTitle'), fbBody = document.getElementById('fbBody');
   var nextBtn = document.getElementById('nextBtn'), quizErr = document.getElementById('quizErr');
@@ -144,13 +151,14 @@
     }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); });
   }
 
-  function renderPills(level) {
+  function renderPills(difficulty) {
     diffPills.innerHTML = '';
-    for (var i = 1; i <= 5; i++) {
+    for (var i = 1; i <= 10; i++) {
       var s = document.createElement('span');
-      if (i <= level) s.className = 'on';
+      if (i <= difficulty) s.className = 'on';
       diffPills.appendChild(s);
     }
+    diffNum.textContent = difficulty + '/10';
   }
 
   function renderQuestion(payload) {
@@ -163,8 +171,8 @@
     var answered = payload.progress.answered, total = payload.progress.total;
     qNo.textContent = 'Question ' + (answered + 1) + ' of ' + total;
     qFill.style.width = ((answered / total) * 100) + '%';
-    lvlNum.textContent = payload.current_level;
-    renderPills(payload.current_level);
+    if (typeof payload.ability !== 'undefined') abilityNum.textContent = payload.ability;
+    renderPills(current.difficulty);
 
     qText.textContent = current.text;
     optBox.innerHTML = '';
@@ -199,11 +207,10 @@
     feedbackBox.className = 'feedback ' + (fb.correct ? 'ok' : 'no');
     feedbackBox.style.display = 'block';
     fbTitle.innerHTML = fb.correct
-      ? '<i class="bi bi-check-circle-fill"></i> Correct! Difficulty increased to level ' + fb.current_level
-      : '<i class="bi bi-x-circle-fill"></i> Not quite — difficulty eased to level ' + fb.current_level;
+      ? '<i class="bi bi-check-circle-fill"></i> Correct! Your skill rating rose to ' + fb.ability + '/100'
+      : '<i class="bi bi-x-circle-fill"></i> Not quite — your skill rating dipped to ' + fb.ability + '/100';
     fbBody.textContent = fb.explanation || '';
-    lvlNum.textContent = fb.current_level;
-    renderPills(fb.current_level);
+    if (typeof fb.ability !== 'undefined') abilityNum.textContent = fb.ability;
   }
 
   function escapeHtml(s) {

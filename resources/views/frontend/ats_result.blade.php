@@ -223,6 +223,7 @@
         </div>
         @endif
 
+        @if($isPro ?? false)
         {{-- Breakdown --}}
         <div class="card">
           <h5><i class="bi bi-bar-chart-line ic"></i>Score Breakdown</h5>
@@ -249,6 +250,15 @@
             <div class="all-good"><i class="bi bi-check-circle-fill" style="font-size:1.2rem"></i> No critical issues found — your resume is well optimised.</div>
           @endif
         </div>
+        @else
+        {{-- Free user: lock advanced breakdown + recommendations behind Pro --}}
+        <div class="card" style="text-align:center;border:2px dashed #c7d4ee;background:linear-gradient(135deg,#f8faff,#eef4ff)">
+          <div style="width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,#2563eb,#60a5fa);color:#fff;font-size:1.5rem;display:flex;align-items:center;justify-content:center;margin:4px auto 14px"><i class="bi bi-lock-fill"></i></div>
+          <h5 style="justify-content:center">Unlock your full ATS report</h5>
+          <p style="color:#64748b;font-size:.9rem;max-width:420px;margin:0 auto 16px">You’ve got your score. Upgrade to <strong>Pro</strong> for the category-by-category breakdown and personalised recommendations to fix your resume.</p>
+          <a href="{{ route('pricing') }}" style="display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;padding:12px 26px;border-radius:11px;font-weight:800;text-decoration:none"><i class="bi bi-stars"></i> Upgrade to Pro</a>
+        </div>
+        @endif
 
       </div>
 

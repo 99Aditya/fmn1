@@ -11,10 +11,25 @@ use Illuminate\Http\Request;
 
 class TestAttemptController extends Controller
 {
+    /** Free-tier daily test-attempt cap. Pro is unlimited. */
+    private const FREE_DAILY_ATTEMPTS = 3;
+
     public function start(Test $test)
     {
         abort_if($test->status !== 'published', 404);
         abort_if($test->questions()->count() === 0, 422, 'This test has no questions yet.');
+
+        // Free users are capped per day; Pro (unlimited_mcq) bypasses this.
+        $user = auth()->user();
+        if (!$user->canUse('unlimited_mcq')) {
+            $todayCount = TestAttempt::where('user_id', $user->id)
+                ->whereDate('created_at', today())
+                ->count();
+            if ($todayCount >= self::FREE_DAILY_ATTEMPTS) {
+                return redirect()->route('pricing')->with('status',
+                    'You have used your ' . self::FREE_DAILY_ATTEMPTS . ' free tests for today. Upgrade to Pro for unlimited practice.');
+            }
+        }
 
         $attempt = TestAttempt::create([
             'user_id'    => auth()->id(),

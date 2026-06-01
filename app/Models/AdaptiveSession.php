@@ -17,6 +17,7 @@ class AdaptiveSession extends Model
     protected $casts = [
         'served_ids'   => 'array',
         'log'          => 'array',
+        'ability'      => 'float',
         'final_level'  => 'float',
         'started_at'   => 'datetime',
         'completed_at' => 'datetime',
